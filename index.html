@@ -1524,7 +1524,12 @@
 
   // ── INIT ──
   updateNavForAuth();
-  if (authToken && authOrg) loadDashboard();
+  if (authToken && authOrg) {
+    loadDashboard();
+    showPage('dashboard');
+  } else {
+    showPage('home');
+  }
 </script>
 </body>
 </html>
