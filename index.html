@@ -3,145 +3,1528 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AgentAudit — Dashboard</title>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<title>AgentAudit — Trust & Accountability for AI Agents</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-:root {
-  --bg:#05050a; --s1:#09090f; --s2:#0d0d16; --s3:#111120;
-  --b1:#17171f; --b2:#21212d; --b3:#2c2c3a;
-  --text:#e2ddd6; --t2:#8888a0; --t3:#484860;
-  --orange:#ff4500; --o2:rgba(255,69,0,.15); --o3:rgba(255,69,0,.06);
-  --green:#00e676; --red:#ff3d57; --amber:#ffab00; --blue:#448aff; --purple:#c084fc;
-  --sidebar:220px; --font:'Plus Jakarta Sans',sans-serif; --mono:'JetBrains Mono',monospace;
-  --r:6px; --r2:10px;
-}
-*{margin:0;padding:0;box-sizing:border-box;}
-html{font-size:15px;}
-body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;display:flex;overflow-x:hidden;}
-a{text-decoration:none;color:inherit;}
-button{font-family:var(--font);cursor:pointer;}
-::-webkit-scrollbar{width:4px;height:4px;}
-::-webkit-scrollbar-track{background:transparent;}
-::-webkit-scrollbar-thumb{background:var(--b3);border-radius:2px;}
+  :root {
+    --bg: #050810;
+    --bg2: #080d1a;
+    --surface: #0d1426;
+    --surface2: #111b35;
+    --border: rgba(99,179,255,0.12);
+    --border2: rgba(99,179,255,0.22);
+    --blue: #3b82f6;
+    --blue-bright: #60a5fa;
+    --cyan: #22d3ee;
+    --green: #10b981;
+    --red: #ef4444;
+    --yellow: #f59e0b;
+    --text: #f0f4ff;
+    --text2: #94a3b8;
+    --text3: #4a5568;
+    --accent: #3b82f6;
+    --glow: rgba(59,130,246,0.3);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--blue); border-radius: 2px; }
 
-/* SIDEBAR */
-.sidebar{width:var(--sidebar);background:var(--s1);border-right:1px solid var(--b1);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;transition:transform .3s;}
-.sidebar-logo{padding:20px 18px;border-bottom:1px solid var(--b1);display:flex;align-items:center;gap:10px;}
-.logo-icon{width:30px;height:30px;background:var(--orange);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#000;border-radius:6px;flex-shrink:0;}
-.logo-text{font-size:15px;font-weight:800;letter-spacing:-0.3px;}
-.sidebar-nav{flex:1;padding:12px 10px;overflow-y:auto;}
-.nav-section{margin-bottom:20px;}
-.nav-label{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);padding:0 8px;margin-bottom:6px;}
-.nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:var(--r);color:var(--t2);font-size:13px;font-weight:500;transition:all .2s;cursor:pointer;border:none;background:none;width:100%;text-align:left;}
-.nav-item:hover{background:var(--s2);color:var(--text);}
-.nav-item.active{background:var(--o2);color:var(--orange);}
-.nav-item .icon{width:16px;text-align:center;font-size:14px;flex-shrink:0;}
-.nav-item .badge{margin-left:auto;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:100px;font-family:var(--mono);}
-.sidebar-footer{padding:12px 10px;border-top:1px solid var(--b1);}
-.mode-toggle{display:flex;align-items:center;gap:8px;padding:10px;background:var(--s2);border-radius:var(--r);border:1px solid var(--b2);}
-.mode-toggle span{font-size:11px;font-weight:600;color:var(--t2);flex:1;}
-.toggle-switch{width:32px;height:18px;background:var(--b3);border-radius:100px;position:relative;cursor:pointer;transition:background .2s;flex-shrink:0;border:none;}
-.toggle-switch.on{background:var(--orange);}
-.toggle-knob{width:12px;height:12px;background:#fff;border-radius:50%;position:absolute;top:3px;left:3px;transition:left .2s;}
-.toggle-switch.on .toggle-knob{left:17px;}
-.mode-label{font-size:10px;font-family:var(--mono);font-weight:600;padding:2px 8px;border-radius:3px;}
-.mode-demo{background:rgba(255,171,0,.12);color:var(--amber);}
-.mode-live{background:rgba(0,230,118,.12);color:var(--green);}
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+    background: rgba(5,8,16,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    height: 60px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .nav-logo {
+    display: flex; align-items: center; gap: 10px;
+    font-weight: 700; font-size: 18px; cursor: pointer;
+    text-decoration: none; color: var(--text);
+  }
+  .nav-logo-icon {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: linear-gradient(135deg, #1d4ed8, #0ea5e9);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; font-weight: 900; font-family: 'JetBrains Mono', monospace;
+    box-shadow: 0 0 16px rgba(59,130,246,0.5);
+  }
+  .nav-links { display: flex; align-items: center; gap: 4px; }
+  .nav-links a {
+    color: var(--text2); text-decoration: none; font-size: 14px;
+    padding: 6px 12px; border-radius: 6px; transition: all 0.2s;
+    cursor: pointer;
+  }
+  .nav-links a:hover { color: var(--text); background: var(--surface); }
+  .nav-cta {
+    background: var(--blue); color: white !important;
+    padding: 7px 16px !important; border-radius: 8px !important;
+    font-weight: 600 !important;
+    box-shadow: 0 0 20px var(--glow);
+  }
+  .nav-cta:hover { background: #2563eb !important; }
+  .mobile-menu-btn {
+    display: none; background: none; border: none;
+    color: var(--text2); font-size: 22px; cursor: pointer;
+  }
 
-/* MAIN */
-.main{margin-left:var(--sidebar);flex:1;display:flex;flex-direction:column;min-height:100vh;}
+  /* ── PAGES ── */
+  .page { display: none; padding-top: 60px; min-height: 100vh; }
+  .page.active { display: block; }
 
-/* TOPBAR */
-.topbar{height:56px;background:var(--s1);border-bottom:1px solid var(--b1);display:flex;align-items:center;padding:0 24px;gap:16px;position:sticky;top:0;z-index:50;}
-.topbar-title{font-size:15px;font-weight:700;letter-spacing:-0.3px;}
-.topbar-sub{font-size:12px;color:var(--t2);font-family:var(--mono);}
-.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
-.status-pill{display:flex;align-items:center;gap:6px;padding:5px 12px;background:var(--s2);border:1px solid var(--b2);border-radius:100px;font-size:12px;font-family:var(--mono);}
-.dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
-.dot-green{background:var(--green);box-shadow:0 0 6px rgba(0,230,118,.5);}
-.dot-orange{background:var(--orange);}
-.dot-red{background:var(--red);}
-.dot-amber{background:var(--amber);}
-.dot-pulse{animation:dp 2s infinite;}
-@keyframes dp{0%,100%{opacity:1}50%{opacity:.4}}
-.btn{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;font-size:13px;font-weight:600;border-radius:var(--r);border:none;transition:all .2s;}
-.btn-primary{background:var(--orange);color:#000;}
-.btn-primary:hover{background:#ff5520;transform:translateY(-1px);}
-.btn-ghost{background:var(--s2);color:var(--t2);border:1px solid var(--b2);}
-.btn-ghost:hover{color:var(--text);border-color:var(--b3);}
-.btn-sm{padding:6px 12px;font-size:12px;}
-.btn-danger{background:rgba(255,61,87,.12);color:var(--red);border:1px solid rgba(255,61,87,.2);}
-.btn-danger:hover{background:rgba(255,61,87,.2);}
+  /* ── HERO ── */
+  .hero {
+    position: relative; overflow: hidden;
+    padding: 100px 24px 80px;
+    text-align: center;
+  }
+  .hero-grid {
+    position: absolute; inset: 0; opacity: 0.04;
+    background-image:
+      linear-gradient(var(--blue) 1px, transparent 1px),
+      linear-gradient(90deg, var(--blue) 1px, transparent 1px);
+    background-size: 50px 50px;
+  }
+  .hero-glow {
+    position: absolute; top: -100px; left: 50%; transform: translateX(-50%);
+    width: 600px; height: 400px;
+    background: radial-gradient(ellipse, rgba(59,130,246,0.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.3);
+    color: var(--blue-bright); font-size: 13px; font-weight: 500;
+    padding: 6px 14px; border-radius: 100px; margin-bottom: 28px;
+    animation: fadeUp 0.6s ease both;
+  }
+  .badge-dot { width: 6px; height: 6px; background: var(--cyan); border-radius: 50%; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  .hero h1 {
+    font-size: clamp(38px, 7vw, 72px); font-weight: 900;
+    line-height: 1.05; letter-spacing: -2px;
+    animation: fadeUp 0.7s ease 0.1s both;
+    max-width: 900px; margin: 0 auto 24px;
+  }
+  .hero h1 span {
+    background: linear-gradient(135deg, #60a5fa, #22d3ee);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .hero-sub {
+    font-size: clamp(16px, 2.5vw, 20px); color: var(--text2);
+    max-width: 600px; margin: 0 auto 40px;
+    animation: fadeUp 0.7s ease 0.2s both; font-weight: 400;
+  }
+  .hero-btns {
+    display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+    animation: fadeUp 0.7s ease 0.3s both;
+  }
+  .btn-primary {
+    background: var(--blue); color: white;
+    padding: 14px 28px; border-radius: 10px; font-size: 16px;
+    font-weight: 600; text-decoration: none; border: none; cursor: pointer;
+    box-shadow: 0 0 30px var(--glow), 0 4px 15px rgba(0,0,0,0.3);
+    transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px;
+    font-family: 'Outfit', sans-serif;
+  }
+  .btn-primary:hover { background: #2563eb; transform: translateY(-2px); box-shadow: 0 0 40px var(--glow), 0 8px 20px rgba(0,0,0,0.4); }
+  .btn-secondary {
+    background: var(--surface); color: var(--text);
+    padding: 14px 28px; border-radius: 10px; font-size: 16px;
+    font-weight: 600; text-decoration: none; border: 1px solid var(--border2); cursor: pointer;
+    transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px;
+    font-family: 'Outfit', sans-serif;
+  }
+  .btn-secondary:hover { background: var(--surface2); border-color: var(--blue); }
 
-/* PAGE */
-.page{padding:24px;display:none;animation:fadeIn .3s ease;}
-.page.active{display:block;}
-@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+  /* hero terminal */
+  .hero-terminal {
+    max-width: 680px; margin: 64px auto 0;
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: 12px; overflow: hidden;
+    box-shadow: 0 0 60px rgba(59,130,246,0.1), 0 20px 60px rgba(0,0,0,0.5);
+    animation: fadeUp 0.8s ease 0.4s both;
+  }
+  .terminal-header {
+    background: var(--surface2); padding: 12px 16px;
+    display: flex; align-items: center; gap: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .t-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .t-dot.r { background: #ff5f56; }
+  .t-dot.y { background: #ffbd2e; }
+  .t-dot.g { background: #27c93f; }
+  .terminal-title { font-size: 12px; color: var(--text3); font-family: 'JetBrains Mono', monospace; margin-left: 8px; }
+  .terminal-body { padding: 20px; text-align: left; }
+  .t-line { font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.8; }
+  .t-cmd { color: var(--cyan); }
+  .t-key { color: var(--blue-bright); }
+  .t-val { color: #a5f3fc; }
+  .t-str { color: #86efac; }
+  .t-comment { color: var(--text3); }
+  .t-success { color: var(--green); }
+  .t-warn { color: var(--yellow); }
+  .t-error { color: var(--red); }
 
-/* CARDS */
-.card{background:var(--s2);border:1px solid var(--b1);border-radius:var(--r2);padding:20px;}
-.card-title{font-size:13px;font-weight:700;letter-spacing:-0.2px;margin-bottom:4px;}
-.card-sub{font-size:11px;color:var(--t2);font-family:var(--mono);}
+  /* stats bar */
+  .stats-bar {
+    display: flex; justify-content: center; gap: 48px;
+    padding: 40px 24px; flex-wrap: wrap;
+    border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+    margin-top: 60px;
+  }
+  .stat { text-align: center; }
+  .stat-num { font-size: 32px; font-weight: 800; color: var(--text); letter-spacing: -1px; }
+  .stat-num span { background: linear-gradient(135deg, #3b82f6, #22d3ee); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .stat-label { font-size: 13px; color: var(--text3); margin-top: 2px; }
 
-/* STAT CARDS */
-.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
-.stat-card{background:var(--s2);border:1px solid var(--b1);border-radius:var(--r2);padding:18px 20px;transition:border-color .2s;}
-.stat-card:hover{border-color:var(--b2);}
-.stat-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
-.stat-label{font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--t2);}
-.stat-icon{width:32px;height:32px;border-radius:var(--r);display:flex;align-items:center;justify-content:center;font-size:14px;}
-.ic-orange{background:var(--o2);}
-.ic-green{background:rgba(0,230,118,.1);}
-.ic-red{background:rgba(255,61,87,.1);}
-.ic-blue{background:rgba(68,138,255,.1);}
-.ic-amber{background:rgba(255,171,0,.1);}
-.stat-value{font-size:28px;font-weight:800;letter-spacing:-1px;line-height:1;margin-bottom:6px;}
-.stat-change{font-size:12px;font-family:var(--mono);}
-.stat-change.up{color:var(--green);}
-.stat-change.down{color:var(--red);}
-.stat-change.neutral{color:var(--t2);}
+  /* ── SECTIONS ── */
+  .section { padding: 80px 24px; max-width: 1200px; margin: 0 auto; }
+  .section-label {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    color: var(--blue-bright); letter-spacing: 2px; text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .section-label::before { content: ''; width: 20px; height: 1px; background: var(--blue); }
+  .section h2 {
+    font-size: clamp(28px, 4vw, 44px); font-weight: 800;
+    letter-spacing: -1px; line-height: 1.1; margin-bottom: 16px;
+  }
+  .section h2 span { background: linear-gradient(135deg, #60a5fa, #22d3ee); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .section-sub { color: var(--text2); font-size: 17px; max-width: 560px; margin-bottom: 56px; }
 
-/* GRID LAYOUTS */
-.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
-.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
-.grid-13{display:grid;grid-template-columns:1fr 320px;gap:16px;}
-.grid-31{display:grid;grid-template-columns:320px 1fr;gap:16px;}
-.col-span-2{grid-column:span 2;}
+  /* cards */
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 28px;
+    transition: all 0.3s;
+  }
+  .card:hover { border-color: var(--border2); transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.3); }
+  .card-icon {
+    width: 44px; height: 44px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; margin-bottom: 16px;
+  }
+  .card-icon.blue { background: rgba(59,130,246,0.15); }
+  .card-icon.cyan { background: rgba(34,211,238,0.15); }
+  .card-icon.green { background: rgba(16,185,129,0.15); }
+  .card-icon.yellow { background: rgba(245,158,11,0.15); }
+  .card-icon.purple { background: rgba(139,92,246,0.15); }
+  .card-icon.red { background: rgba(239,68,68,0.15); }
+  .card h3 { font-size: 17px; font-weight: 700; margin-bottom: 8px; }
+  .card p { font-size: 14px; color: var(--text2); line-height: 1.6; }
 
-/* CHART CONTAINERS */
-.chart-wrap{position:relative;}
-.chart-title{font-size:13px;font-weight:700;margin-bottom:4px;}
-.chart-sub{font-size:11px;color:var(--t2);font-family:var(--mono);margin-bottom:16px;}
-canvas{max-height:220px;}
+  /* how it works */
+  .steps { display: flex; flex-direction: column; gap: 0; max-width: 700px; }
+  .step { display: flex; gap: 20px; padding: 28px 0; position: relative; }
+  .step:not(:last-child)::after {
+    content: ''; position: absolute; left: 19px; top: 60px; bottom: 0;
+    width: 1px; background: var(--border);
+  }
+  .step-num {
+    width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
+    background: var(--surface2); border: 1px solid var(--border2);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'JetBrains Mono', monospace; font-size: 13px;
+    color: var(--blue-bright); font-weight: 700; z-index: 1;
+  }
+  .step-body h3 { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+  .step-body p { font-size: 14px; color: var(--text2); }
+  .step-code {
+    font-family: 'JetBrains Mono', monospace; font-size: 12px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 6px; padding: 10px 14px; margin-top: 10px;
+    color: var(--cyan);
+  }
 
-/* TABLE */
-.table-wrap{overflow-x:auto;margin:-4px;}
-table{width:100%;border-collapse:collapse;font-size:13px;}
-thead th{padding:10px 14px;text-align:left;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--t3);border-bottom:1px solid var(--b1);white-space:nowrap;}
-tbody td{padding:11px 14px;border-bottom:1px solid var(--b1);vertical-align:middle;}
-tbody tr:last-child td{border-bottom:none;}
-tbody tr:hover td{background:rgba(255,255,255,.02);}
-.td-mono{font-family:var(--mono);font-size:12px;}
+  /* ── PRICING ── */
+  .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; max-width: 960px; }
+  .price-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 32px; position: relative;
+    transition: all 0.3s;
+  }
+  .price-card:hover { transform: translateY(-4px); }
+  .price-card.popular {
+    border-color: var(--blue); background: linear-gradient(135deg, rgba(59,130,246,0.08), rgba(34,211,238,0.04));
+    box-shadow: 0 0 40px rgba(59,130,246,0.15);
+  }
+  .popular-badge {
+    position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+    background: var(--blue); color: white; font-size: 11px; font-weight: 700;
+    padding: 4px 16px; border-radius: 100px; letter-spacing: 1px; text-transform: uppercase;
+  }
+  .plan-name { font-size: 14px; font-weight: 600; color: var(--text2); margin-bottom: 8px; letter-spacing: 1px; text-transform: uppercase; font-family: 'JetBrains Mono', monospace; }
+  .plan-price { font-size: 44px; font-weight: 900; letter-spacing: -2px; margin-bottom: 4px; }
+  .plan-price sup { font-size: 20px; font-weight: 600; vertical-align: top; margin-top: 12px; display: inline-block; }
+  .plan-period { font-size: 14px; color: var(--text3); margin-bottom: 24px; }
+  .plan-features { list-style: none; display: flex; flex-direction: column; gap: 12px; margin-bottom: 28px; }
+  .plan-features li { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--text2); }
+  .plan-features li::before { content: '✓'; color: var(--green); font-weight: 700; font-size: 13px; }
+  .plan-features li.no::before { content: '✗'; color: var(--text3); }
+  .plan-features li.no { color: var(--text3); }
 
-/* BADGES */
-.badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:100px;font-size:11px;font-weight:600;font-family:var(--mono);white-space:nowrap;}
-.b-green{background:rgba(0,230,118,.1);color:var(--green);border:1px solid rgba(0,230,118,.2);}
-.b-red{background:rgba(255,61,87,.1);color:var(--red);border:1px solid rgba(255,61,87,.2);}
-.b-amber{background:rgba(255,171,0,.1);color:var(--amber);border:1px solid rgba(255,171,0,.2);}
-.b-orange{background:var(--o2);color:var(--orange);border:1px solid rgba(255,69,0,.25);}
-.b-blue{background:rgba(68,138,255,.1);color:var(--blue);border:1px solid rgba(68,138,255,.2);}
-.b-muted{background:var(--s2);color:var(--t2);border:1px solid var(--b2);}
+  /* ── DOCS ── */
+  .docs-layout { display: grid; grid-template-columns: 220px 1fr; gap: 40px; align-items: start; }
+  .docs-sidebar { position: sticky; top: 80px; }
+  .docs-nav-item {
+    display: block; padding: 8px 14px; color: var(--text2); font-size: 14px;
+    border-radius: 6px; cursor: pointer; transition: all 0.2s; text-decoration: none;
+    margin-bottom: 2px;
+  }
+  .docs-nav-item:hover, .docs-nav-item.active { background: var(--surface); color: var(--text); }
+  .docs-nav-section { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; padding: 12px 14px 4px; font-family: 'JetBrains Mono', monospace; }
+  .endpoint {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; margin-bottom: 12px; overflow: hidden;
+  }
+  .endpoint-header {
+    padding: 14px 18px; display: flex; align-items: center; gap: 12px; cursor: pointer;
+  }
+  .method {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700;
+    padding: 3px 8px; border-radius: 4px; min-width: 48px; text-align: center;
+  }
+  .method.GET { background: rgba(16,185,129,0.15); color: #10b981; }
+  .method.POST { background: rgba(59,130,246,0.15); color: #60a5fa; }
+  .method.PATCH { background: rgba(245,158,11,0.15); color: #f59e0b; }
+  .method.DELETE { background: rgba(239,68,68,0.15); color: #ef4444; }
+  .endpoint-path { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--text); }
+  .endpoint-desc { font-size: 13px; color: var(--text3); margin-left: auto; }
 
-/* AGENT CARD */
-.agent-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
-.agent-card{background:var(--s2);border:1px solid var(--b1);border-radius:var(--r2);padding:18px;transition:all .25s;}
-.agent-card:hover{border-color:var(--b2);transform:translateY(-2px);}
-.agent-header{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px;}
-.agent-avatar{width:40px;height:40px;border-radius:var(--r);background:var(--o2);border:1px solid rgba(255,69,0,.2);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
-.agent-name{font-size:14px;font-weight:700;letter-spacing:-0.2px;margin-bottom:3px;}
-.agent-role{font-size:11px;color:var(--t2);font-family:var(--mono);}
-.agent-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
-.agent-stat{background:var(--s1);border-radius:var(--r);padding:8px 10px;}
-.agent-stat-val{font-size:18px;font-weight:800;letter-spacing:-0.5px;}
+  /* ── ABOUT ── */
+  .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; }
+  .about-visual {
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: 16px; padding: 36px;
+    box-shadow: 0 0 60px rgba(59,130,246,0.08);
+  }
+  .timeline { display: flex; flex-direction: column; gap: 20px; }
+  .tl-item { display: flex; gap: 16px; }
+  .tl-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--blue); flex-shrink: 0; margin-top: 6px; }
+  .tl-content h4 { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+  .tl-content p { font-size: 13px; color: var(--text2); }
+
+  /* ── SECURITY ── */
+  .security-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+  .sec-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 24px;
+  }
+  .sec-card h3 { font-size: 15px; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+  .sec-card p { font-size: 13px; color: var(--text2); }
+  .sec-status { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; }
+  .sec-status.pass { color: var(--green); }
+  .sec-status.pass::before { content: '●'; font-size: 8px; }
+
+  /* ── LEGAL ── */
+  .legal-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 36px; }
+  .legal-tab {
+    padding: 8px 18px; border-radius: 8px; font-size: 14px; font-weight: 500;
+    cursor: pointer; border: 1px solid var(--border); color: var(--text2);
+    background: transparent; transition: all 0.2s;
+    font-family: 'Outfit', sans-serif;
+  }
+    .legal-tab:hover { border-color: var(--border2); color: var(--text); }
+  .legal-tab.active { background: var(--blue); color: white; border-color: var(--blue); }
+  .legal-content { display: none; }
+  .legal-content.active { display: block; }
+  .legal-content h3 { font-size: 20px; font-weight: 700; margin: 28px 0 10px; color: var(--text); }
+  .legal-content h3:first-child { margin-top: 0; }
+  .legal-content p { font-size: 14px; color: var(--text2); margin-bottom: 14px; line-height: 1.7; }
+  .legal-content ul { padding-left: 20px; margin-bottom: 14px; }
+  .legal-content ul li { font-size: 14px; color: var(--text2); margin-bottom: 6px; }
+
+  /* ── CONTACT ── */
+  .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: start; }
+  .contact-form { display: flex; flex-direction: column; gap: 16px; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group label { font-size: 13px; color: var(--text2); font-weight: 500; }
+  .form-group input, .form-group textarea, .form-group select {
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: 8px; padding: 12px 14px; color: var(--text); font-size: 14px;
+    font-family: 'Outfit', sans-serif; transition: all 0.2s; outline: none;
+    resize: vertical;
+  }
+  .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+    border-color: var(--blue); box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+  }
+  .form-group select option { background: var(--surface2); }
+  .contact-info { display: flex; flex-direction: column; gap: 24px; }
+  .contact-item { display: flex; gap: 14px; align-items: flex-start; }
+  .contact-icon {
+    width: 40px; height: 40px; border-radius: 8px; background: var(--surface);
+    border: 1px solid var(--border); display: flex; align-items: center;
+    justify-content: center; font-size: 18px; flex-shrink: 0;
+  }
+  .contact-item h4 { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+  .contact-item p { font-size: 13px; color: var(--text2); }
+  .contact-item a { color: var(--blue-bright); text-decoration: none; }
+
+  /* ── STATUS ── */
+  .status-header {
+    background: var(--surface); border: 1px solid var(--green);
+    border-radius: 12px; padding: 24px 28px; margin-bottom: 32px;
+    display: flex; align-items: center; gap: 16px;
+    box-shadow: 0 0 30px rgba(16,185,129,0.1);
+  }
+  .status-dot-big { width: 14px; height: 14px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+  .status-header-text h2 { font-size: 20px; font-weight: 700; }
+  .status-header-text p { font-size: 13px; color: var(--text2); }
+  .status-items { display: flex; flex-direction: column; gap: 2px; }
+  .status-item {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 16px 20px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .status-item h4 { font-size: 14px; font-weight: 600; }
+  .status-item p { font-size: 12px; color: var(--text3); margin-top: 2px; }
+  .status-badge {
+    font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 100px;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .status-badge.operational { background: rgba(16,185,129,0.1); color: var(--green); }
+  .status-badge.degraded { background: rgba(245,158,11,0.1); color: var(--yellow); }
+  .uptime-bars { display: flex; gap: 3px; margin-top: 20px; }
+  .uptime-bar { flex: 1; height: 32px; background: rgba(16,185,129,0.3); border-radius: 3px; }
+  .uptime-bar.incident { background: rgba(239,68,68,0.4); }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border); padding: 48px 24px 32px;
+    background: var(--bg2);
+  }
+  .footer-grid { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px; margin-bottom: 40px; }
+  .footer-brand p { font-size: 14px; color: var(--text3); margin-top: 10px; max-width: 280px; line-height: 1.6; }
+  .footer-links h4 { font-size: 12px; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px; font-family: 'JetBrains Mono', monospace; }
+  .footer-links a { display: block; font-size: 14px; color: var(--text2); text-decoration: none; margin-bottom: 8px; cursor: pointer; transition: color 0.2s; }
+  .footer-links a:hover { color: var(--text); }
+  .footer-bottom { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+  .footer-bottom p { font-size: 12px; color: var(--text3); }
+  .footer-status { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--green); }
+  .footer-status::before { content: '●'; font-size: 8px; }
+
+  /* ── CTA SECTION ── */
+  .cta-section {
+    margin: 0 24px 80px; border-radius: 20px;
+    background: linear-gradient(135deg, rgba(59,130,246,0.12), rgba(34,211,238,0.06));
+    border: 1px solid rgba(59,130,246,0.25); padding: 64px 40px;
+    text-align: center; position: relative; overflow: hidden;
+  }
+  .cta-section::before {
+    content: ''; position: absolute; top: -60px; right: -60px;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(59,130,246,0.15), transparent 70%);
+  }
+  .cta-section h2 { font-size: clamp(24px, 4vw, 40px); font-weight: 800; letter-spacing: -1px; margin-bottom: 12px; }
+  .cta-section p { color: var(--text2); font-size: 17px; margin-bottom: 32px; }
+
+  /* ── API KEYS DISPLAY ── */
+  .api-key-demo {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px 20px; margin-top: 24px;
+    font-family: 'JetBrains Mono', monospace; font-size: 13px;
+  }
+  .api-key-row { display: flex; justify-content: space-between; align-items: center; }
+  .api-key-label { color: var(--text3); font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+  .api-key-val { color: var(--cyan); }
+  .copy-btn { background: var(--surface2); border: 1px solid var(--border); color: var(--text2); padding: 4px 10px; border-radius: 4px; font-size: 11px; cursor: pointer; font-family: 'Outfit', sans-serif; }
+
+  /* table */
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; padding: 12px 16px; font-size: 12px; color: var(--text3); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--border); font-family: 'JetBrains Mono', monospace; }
+  td { padding: 14px 16px; font-size: 14px; color: var(--text2); border-bottom: 1px solid var(--border); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface2); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    .nav-links { display: none; }
+    .mobile-menu-btn { display: block; }
+    .nav-links.open { display: flex; flex-direction: column; position: fixed; top: 60px; left: 0; right: 0; background: var(--bg2); border-bottom: 1px solid var(--border); padding: 12px; z-index: 999; }
+    .docs-layout { grid-template-columns: 1fr; }
+    .docs-sidebar { position: static; }
+    .about-grid, .contact-grid { grid-template-columns: 1fr; }
+    .footer-grid { grid-template-columns: 1fr 1fr; }
+    .stats-bar { gap: 28px; }
+    .hero { padding: 60px 24px 60px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" onclick="showPage('home')">
+    <div class="nav-logo-icon">A</div>
+    AgentAudit
+  </a>
+  <div class="nav-links" id="navLinks">
+    <a onclick="showPage('home')">Home</a>
+    <a onclick="showPage('pricing')">Pricing</a>
+    <a onclick="showPage('docs')">Docs</a>
+    <a onclick="showPage('about')">About</a>
+    <a onclick="showPage('security')">Security</a>
+    <a onclick="showPage('contact')">Contact</a>
+    <a onclick="showPage('status')">Status</a>
+    <a class="nav-cta" id="nav-login-btn" onclick="showPage('login')">Login</a>
+    <a class="nav-cta" id="nav-signup-btn" onclick="showPage('signup')" style="margin-left:6px">Get Started →</a>
+    <a class="nav-cta" id="nav-dashboard-btn" onclick="showPage('dashboard')" style="display:none;margin-left:6px">Dashboard</a>
+  </div>
+  <button class="mobile-menu-btn" onclick="toggleMobile()">☰</button>
+</nav>
+
+<!-- ═══════════════════════════ HOME ═══════════════════════════ -->
+<div class="page active" id="page-home">
+
+  <div class="hero">
+    <div class="hero-grid"></div>
+    <div class="hero-glow"></div>
+    <div class="hero-badge">
+      <span class="badge-dot"></span>
+      Trust Infrastructure for AI Agents
+    </div>
+    <h1>Every AI Action.<br><span>Authorized. Logged. Audited.</span></h1>
+    <p class="hero-sub">AgentAudit is the accountability layer for AI agents — real-time authorization, behavioral risk scoring, and compliance-ready audit trails in minutes.</p>
+    <div class="hero-btns">
+      <button class="btn-primary" onclick="showPage('pricing')">Start Free — No Card Needed</button>
+      <button class="btn-secondary" onclick="showPage('docs')">View API Docs →</button>
+    </div>
+
+    <div class="hero-terminal">
+      <div class="terminal-header">
+        <div class="t-dot r"></div><div class="t-dot y"></div><div class="t-dot g"></div>
+        <span class="terminal-title">agentaudit — authorize & execute</span>
+      </div>
+      <div class="terminal-body">
+        <div class="t-line"><span class="t-comment">// 1. Authorize an action</span></div>
+        <div class="t-line"><span class="t-cmd">POST</span> <span class="t-val">https://api.agentpassport.in/authorize</span></div>
+        <div class="t-line">{ <span class="t-key">"agentId"</span>: <span class="t-str">"agent_payment_bot"</span>, <span class="t-key">"action"</span>: <span class="t-str">"transfer_funds"</span>, <span class="t-key">"ttl"</span>: <span class="t-val">300</span> }</div>
+        <br>
+        <div class="t-line"><span class="t-comment">// Response</span></div>
+        <div class="t-line">{ <span class="t-key">"token"</span>: <span class="t-str">"auth_7x9k..."</span>, <span class="t-key">"expiresIn"</span>: <span class="t-val">300</span>, <span class="t-success">"status": "authorized"</span> }</div>
+        <br>
+        <div class="t-line"><span class="t-comment">// 2. Execute with validation (7 security checks)</span></div>
+        <div class="t-line"><span class="t-cmd">POST</span> <span class="t-val">/execute</span> → <span class="t-success">✓ Allowed</span> — risk score: <span class="t-val">12/100</span></div>
+        <br>
+        <div class="t-line"><span class="t-comment">// 3. Behavioral anomaly detected next day</span></div>
+        <div class="t-line"><span class="t-warn">⚠ INCIDENT</span>: agent made <span class="t-val">847</span> calls in 2 min — <span class="t-error">rate limit exceeded</span></div>
+        <div class="t-line"><span class="t-success">✓ Auto-suspended</span> + incident logged to audit trail</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="stats-bar">
+    <div class="stat"><div class="stat-num"><span>20</span></div><div class="stat-label">API Endpoints</div></div>
+    <div class="stat"><div class="stat-num"><span>7</span></div><div class="stat-label">Security Checks</div></div>
+    <div class="stat"><div class="stat-num"><span>99.9%</span></div><div class="stat-label">Uptime SLA</div></div>
+    <div class="stat"><div class="stat-num"><span>&lt;50ms</span></div><div class="stat-label">Avg Latency</div></div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">Core Features</div>
+    <h2>Everything your AI agents<br><span>need to stay safe</span></h2>
+    <p class="section-sub">One API for authorization, execution validation, behavioral analytics, and compliance audit trails.</p>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-icon blue">🔐</div>
+        <h3>Time-Limited Authorization</h3>
+        <p>Every agent action requires an authorization token with configurable TTL. No token = no execution. Automatic expiry prevents replay attacks.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon cyan">🛡️</div>
+        <h3>7-Layer Execution Validation</h3>
+        <p>Every /execute call runs policy checks, rate limits, suspension checks, token validation, and more — before your agent does anything.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon green">📊</div>
+        <h3>Real-Time Risk Scoring</h3>
+        <p>Gemini AI analyzes behavior patterns and assigns a 0–100 risk score per agent. Catch anomalies before they become incidents.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon yellow">📋</div>
+        <h3>Compliance Audit Logs</h3>
+        <p>Paginated, immutable audit trails for every agent action. Export for SOC 2, ISO 27001, or internal compliance reviews.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon purple">⚡</div>
+        <h3>Behavioral Analytics</h3>
+        <p>Daily trends, hourly heatmaps, denial reason breakdowns, and per-agent performance analytics — all via API.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon red">🚨</div>
+        <h3>Automatic Incident Detection</h3>
+        <p>Rate spikes, policy violations, and suspicious patterns trigger instant incident creation. Auto-suspend on critical risk.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" style="padding-top:0">
+    <div class="section-label">How It Works</div>
+    <h2>Live in <span>3 API calls</span></h2>
+    <p class="section-sub">Register your agent, define policies, and start authorizing actions — all via REST API.</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <div class="step-body">
+          <h3>Register your AI agent</h3>
+          <p>Give your agent a name and capabilities. Get back an agentId to use in all future calls.</p>
+          <div class="step-code">POST /agents → { "agentId": "agent_abc123", "status": "active" }</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <div class="step-body">
+          <h3>Define policy rules</h3>
+          <p>Set rate limits, allowed actions, blacklisted actions, and execution windows per agent.</p>
+          <div class="step-code">POST /policies → { "rateLimit": 100, "allowedActions": ["read", "write"] }</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <div class="step-body">
+          <h3>Authorize → Execute → Audit</h3>
+          <p>Every action needs an authorization token. Execute validates against 7 security checks. Every outcome is logged.</p>
+          <div class="step-code">POST /authorize → POST /execute → GET /audit</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">04</div>
+        <div class="step-body">
+          <h3>Monitor risk &amp; incidents</h3>
+          <p>Gemini AI generates behavioral summaries, flags anomalies, and creates incidents automatically.</p>
+          <div class="step-code">GET /risk/:agentId → GET /incidents → GET /audit/summary/:agentId</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cta-section">
+    <h2>Start auditing your AI agents today</h2>
+    <p>Free tier — 3 agents, 500 executions/month. No credit card required.</p>
+    <button class="btn-primary" onclick="showPage('pricing')" style="font-size:17px;padding:16px 32px;">Get Your API Key →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ PRICING ═══════════════════════════ -->
+<div class="page" id="page-pricing">
+  <div class="section" style="text-align:center">
+    <div class="section-label" style="justify-content:center">Pricing</div>
+    <h2>Simple, transparent <span>pricing</span></h2>
+    <p class="section-sub" style="margin:0 auto 56px">Start free. Scale when you need to. No hidden fees.</p>
+
+    <div class="pricing-grid" style="margin:0 auto">
+      <div class="price-card">
+        <div class="plan-name">Free</div>
+        <div class="plan-price">₹0</div>
+        <div class="plan-period">forever</div>
+        <ul class="plan-features">
+          <li>3 AI agents</li>
+          <li>500 executions / month</li>
+          <li>Basic audit logs</li>
+          <li>All 20 API endpoints</li>
+          <li>7-layer execution validation</li>
+          <li class="no">Gemini AI risk analysis</li>
+          <li class="no">Behavioral summaries</li>
+          <li class="no">Priority support</li>
+        </ul>
+        <button class="btn-secondary" onclick="showPage('contact')" style="width:100%;justify-content:center">Get Started Free</button>
+      </div>
+
+      <div class="price-card popular">
+        <div class="popular-badge">MOST POPULAR</div>
+        <div class="plan-name">Growth</div>
+        <div class="plan-price"><sup>₹</sup>4,999</div>
+        <div class="plan-period">per month</div>
+        <ul class="plan-features">
+          <li>25 AI agents</li>
+          <li>50,000 executions / month</li>
+          <li>Full audit logs + export</li>
+          <li>All 20 API endpoints</li>
+          <li>7-layer execution validation</li>
+          <li>Gemini AI risk analysis</li>
+          <li>Behavioral summaries</li>
+          <li>Email support</li>
+        </ul>
+        <button class="btn-primary" onclick="showPage('contact')" style="width:100%;justify-content:center">Start Growth Plan</button>
+      </div>
+
+      <div class="price-card">
+        <div class="plan-name">Enterprise</div>
+        <div class="plan-price" style="font-size:32px;letter-spacing:-1px;padding-top:6px">Custom</div>
+        <div class="plan-period">contact us</div>
+        <ul class="plan-features">
+          <li>Unlimited agents</li>
+          <li>Unlimited executions</li>
+          <li>SOC 2 / ISO 27001 reports</li>
+          <li>Custom policy engine</li>
+          <li>Dedicated Gemini AI</li>
+          <li>SLA guarantee</li>
+          <li>On-premise option</li>
+          <li>Dedicated support</li>
+        </ul>
+        <button class="btn-secondary" onclick="showPage('contact')" style="width:100%;justify-content:center">Contact Sales</button>
+      </div>
+    </div>
+
+    <div style="margin-top:48px;max-width:800px;margin-left:auto;margin-right:auto">
+      <div class="section-label" style="justify-content:center;margin-bottom:20px">Compare Plans</div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden">
+        <table>
+          <thead><tr><th>Feature</th><th>Free</th><th>Growth</th><th>Enterprise</th></tr></thead>
+          <tbody>
+            <tr><td>Agents</td><td>3</td><td>25</td><td>Unlimited</td></tr>
+            <tr><td>Executions/month</td><td>500</td><td>50,000</td><td>Unlimited</td></tr>
+            <tr><td>Audit log retention</td><td>7 days</td><td>90 days</td><td>Unlimited</td></tr>
+            <tr><td>Gemini AI analysis</td><td>✗</td><td>✓</td><td>✓ Dedicated</td></tr>
+            <tr><td>Risk scoring</td><td>Basic</td><td>Full</td><td>Custom model</td></tr>
+            <tr><td>Incident detection</td><td>✓</td><td>✓</td><td>✓ + Alerts</td></tr>
+            <tr><td>API rate limit</td><td>100/min</td><td>1000/min</td><td>Custom</td></tr>
+            <tr><td>Support</td><td>Community</td><td>Email</td><td>Dedicated SLA</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ DOCS ═══════════════════════════ -->
+<div class="page" id="page-docs">
+  <div class="section">
+    <div class="section-label">API Reference</div>
+    <h2>Developer <span>Documentation</span></h2>
+    <p class="section-sub">All endpoints accept JSON. Authenticate with your API key in the <code style="font-family:'JetBrains Mono',monospace;background:var(--surface);padding:2px 6px;border-radius:4px;font-size:13px">x-api-key</code> header.</p>
+
+    <div class="api-key-demo">
+      <div class="api-key-label">Base URL</div>
+      <div class="api-key-row">
+        <div class="api-key-val">https://api.agentpassport.in</div>
+           <button class="copy-btn" onclick="copyText('https://api.agentpassport.in', this)">Copy</button>
+      </div>
+    </div>
+    <div class="api-key-demo" style="margin-top:8px">
+      <div class="api-key-label">Authentication Header</div>
+      <div class="api-key-val">x-api-key: ak_your_key_here</div>
+    </div>
+
+    <div style="margin-top:48px">
+      <div class="section-label">Organization</div>
+      <div class="endpoint"><div class="endpoint-header"><span class="method POST">POST</span><span class="endpoint-path">/org</span><span class="endpoint-desc">Create organization</span></div></div>
+      <div class="endpoint"><div class="endpoint-header"><span class="method GET">GET</span><span class="endpoint-path">/org/me</span><span class="endpoint-desc">Get current org details</span></div></div>
+      <div class="endpoint"><div class="endpoint-header"><span class="method GET">GET</span><span class="endpoint-path">/analytics/org</span><span class="endpoint-desc">Org analytics overview</span></div></div>
+
+      <div class="section-label" style="margin-top:32px">Agents</div>
+      <div class="endpoint"><div class="endpoint-header"><span class="method POST">POST</span><span class="endpoint-path">/agents</span><span class="endpoint-desc">Register agent</span></div></div>
+      <div class="endpoint"><div class="endpoint-header"><span class="method GET">GET</span><span class="endpoint-path">/agents</span><span class="endpoint-desc">List all agents</span></div></div>
+      <div class="endpoint"><div class="endpoint-header"><span class="method GET">GET</span><span class="endpoint-path">/agents/:id</span><span class="endpoint-desc">Get agent by ID</span></div></div>
+      <div class="endpoint"><div class="endpoint-header"><span class="method PATCH">PATCH</span><span class="endpoint-path">/agents/:id/suspend</span><span class="endpoint-desc">Suspend agent</span></div></div>
+      <div class="endpoint"><div class="endpoint-header"><span class="method PATCH">PATCH</span><span class="endpoint-path">/agents/:id/activate</span><span class="endpoint-desc">Activate agent</span></div></div>
+      <div class="endpoint"><div class="endpoint-header"><span class="method DELETE">DELETE</span><span class="endpoint-path">/agents/:id</span><span class="endpoint-desc">Delete agent (suspend first)</span></div></div>
+
+      <div class="section-label" style="margin-top:32px">Policies</div>
+      <div class="endpoint"><div class="endpoint-header"><span class="method POST">POST</span><span class="endpoint-path">/policies</span><span class="endpoint-desc">Create policy rule</span></div></div>
+      <div class="endpoint"><div class="endpoint-header"><span class="method GET">GET</span><span class="endpoint-path">/policies</span><span class="endpoint-desc">List all policies</span></div></div>
+
+      <div class="section-label" style="margin-top:32px">Authorization & Execution</div>
+      <div class="endpoint"><div class="endpoint-header"><span class="method POST">POST</span><span class="endpoint-path">/authorize</span><span class="endpoint-desc">Create time-limited authorization</span></div></div>
+      <div class="endpoint"><div class="endpoint-header"><span class="method POST">POST</span><span class="endpoint-path">/execute</span><span class="endpoint-desc">Execute with 7 security checks</span></div></div>
+
+      <div class="section-label" style="margin-top:32px">Audit & Monitoring</div>
+      <div class="endpoint"><div class="endpoint-header"><span class="method GET">GET</span><span class="endpoint-path">/audit</span><span class="endpoint-desc">Org audit log (paginated)</span></div></div>
+      <div class="endpoint"><div class="endpoint-header"><span class="method GET">GET</span><span class="endpoint-path">/audit/:agentId</span><span class="endpoint-desc">Agent audit log</span></div></div>
+      <div class="endpoint"><div class="endpoint-header"><span class="method GET">GET</span><span class="endpoint-path">/audit/summary/:agentId</span><span class="endpoint-desc">AI behavioral summary (Gemini)</span></div></div>
+      <div class="endpoint"><div class="endpoint-header"><span class="method GET">GET</span><span class="endpoint-path">/incidents</span><span class="endpoint-desc">List incidents</span></div></div>
+      <div class="endpoint"><div class="endpoint-header"><span class="method GET">GET</span><span class="endpoint-path">/risk/:agentId</span><span class="endpoint-desc">Agent risk profile</span></div></div>
+      <div class="endpoint"><div class="endpoint-header"><span class="method GET">GET</span><span class="endpoint-path">/analytics/overview</span><span class="endpoint-desc">Real-time analytics</span></div></div>
+      <div class="endpoint"><div class="endpoint-header"><span class="method GET">GET</span><span class="endpoint-path">/health</span><span class="endpoint-desc">Health check</span></div></div>
+    </div>
+
+    <div style="margin-top:48px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:28px">
+      <div class="section-label">Quick Start</div>
+      <div class="t-line" style="font-family:'JetBrains Mono',monospace;font-size:13px;line-height:2;background:var(--bg2);padding:20px;border-radius:8px;margin-top:12px">
+        <div><span class="t-comment"># 1. Register an agent</span></div>
+        <div><span class="t-cmd">curl</span> -X POST https://api.agentpassport.in/agents \</div>
+        <div>&nbsp;&nbsp;-H <span class="t-str">"x-api-key: ak_your_key"</span> \</div>
+        <div>&nbsp;&nbsp;-d <span class="t-str">'{"name":"my-agent","capabilities":["read","write"]}'</span></div>
+        <br>
+        <div><span class="t-comment"># 2. Authorize an action</span></div>
+        <div><span class="t-cmd">curl</span> -X POST https://api.agentpassport.in/authorize \</div>
+        <div>&nbsp;&nbsp;-H <span class="t-str">"x-api-key: ak_your_key"</span> \</div>
+        <div>&nbsp;&nbsp;-d <span class="t-str">'{"agentId":"agent_abc","action":"write","ttl":300}'</span></div>
+        <br>
+        <div><span class="t-comment"># 3. Execute</span></div>
+        <div><span class="t-cmd">curl</span> -X POST https://api.agentpassport.in/execute \</div>
+        <div>&nbsp;&nbsp;-H <span class="t-str">"x-api-key: ak_your_key"</span> \</div>
+        <div>&nbsp;&nbsp;-d <span class="t-str">'{"agentId":"agent_abc","authToken":"auth_xyz","action":"write"}'</span></div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <!-- ═══════════════════════════ ABOUT ═══════════════════════════ -->
+<div class="page" id="page-about">
+  <div class="section">
+    <div class="section-label">About</div>
+    <h2>The trust layer the <span>AI era needs</span></h2>
+
+    <div class="about-grid">
+      <div>
+        <p style="font-size:17px;color:var(--text2);line-height:1.8;margin-bottom:24px">
+          As AI agents proliferate across fintech, SaaS, and enterprise software, one question gets ignored: <strong style="color:var(--text)">who's watching what the AI does?</strong>
+        </p>
+        <p style="font-size:17px;color:var(--text2);line-height:1.8;margin-bottom:24px">
+          AgentAudit was built to answer that. We provide the infrastructure layer that lets companies deploy AI agents confidently — with real-time authorization, behavioral risk scoring powered by Gemini AI, and immutable audit trails.
+        </p>
+        <p style="font-size:17px;color:var(--text2);line-height:1.8;margin-bottom:32px">
+          Think of us as the compliance layer between your AI agents and the real world. Like Stripe handles payments, we handle trust.
+        </p>
+        <div class="cards" style="grid-template-columns:1fr 1fr;gap:12px">
+          <div class="card" style="padding:20px">
+            <div style="font-size:28px;font-weight:800;color:var(--blue-bright)">20</div>
+            <div style="font-size:13px;color:var(--text3)">API Endpoints</div>
+          </div>
+          <div class="card" style="padding:20px">
+            <div style="font-size:28px;font-weight:800;color:var(--cyan)">7</div>
+            <div style="font-size:13px;color:var(--text3)">Security Checks</div>
+          </div>
+          <div class="card" style="padding:20px">
+            <div style="font-size:28px;font-weight:800;color:var(--green)">99.9%</div>
+            <div style="font-size:13px;color:var(--text3)">Uptime SLA</div>
+          </div>
+          <div class="card" style="padding:20px">
+            <div style="font-size:28px;font-weight:800;color:var(--yellow)">0</div>
+            <div style="font-size:13px;color:var(--text3)">Data Brokers</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="about-visual">
+        <div style="font-size:13px;color:var(--text3);font-family:'JetBrains Mono',monospace;margin-bottom:20px;text-transform:uppercase;letter-spacing:1px">Roadmap</div>
+        <div class="timeline">
+          <div class="tl-item">
+            <div class="tl-dot" style="background:var(--green)"></div>
+            <div class="tl-content">
+              <h4>Backend &amp; Core API ✓</h4>
+              <p>All 20 endpoints live. Supabase DB, Gemini AI, Render hosting.</p>
+            </div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot" style="background:var(--green)"></div>
+            <div class="tl-content">
+              <h4>Marketing Website ✓</h4>
+              <p>agentpassport.in live with 8-page SPA.</p>
+            </div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot" style="background:var(--blue)"></div>
+            <div class="tl-content">
+              <h4>Auth System — In Progress</h4>
+              <p>Email/password signup. API key delivery via dashboard.</p>
+            </div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot"></div>
+            <div class="tl-content">
+              <h4>Razorpay Integration</h4>
+              <p>Growth plan payments, plan upgrades, billing portal.</p>
+            </div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot"></div>
+            <div class="tl-content">
+              <h4>Live Dashboard</h4>
+              <p>Real-time analytics, agent management, incident console.</p>
+            </div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot"></div>
+            <div class="tl-content">
+              <h4>SDK &amp; Integrations</h4>
+              <p>Node.js SDK, Python SDK, LangChain integration.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ SECURITY ═══════════════════════════ -->
+<div class="page" id="page-security">
+  <div class="section">
+    <div class="section-label">Security</div>
+    <h2>Security-first <span>by design</span></h2>
+    <p class="section-sub">Every architectural decision prioritizes the security of your agents and your data.</p>
+
+    <div class="security-grid">
+      <div class="sec-card">
+        <h3>🔑 API Key Hashing <span class="sec-status pass">Active</span></h3>
+        <p>All API keys stored as SHA-256 hashes. Raw keys are shown once at creation and never stored in plaintext.</p>
+      </div>
+      <div class="sec-card">
+        <h3>⏱️ Token Expiry <span class="sec-status pass">Active</span></h3>
+        <p>Every authorization token has a TTL (default 300s). Expired tokens are rejected automatically — no replay attacks.</p>
+      </div>
+      <div class="sec-card">
+        <h3>🔒 7-Layer Validation <span class="sec-status pass">Active</span></h3>
+        <p>Every /execute call checks: token validity, token expiry, agent status, rate limits, policy rules, org plan limits, and action allowlist.</p>
+      </div>
+      <div class="sec-card">
+        <h3>📊 Rate Limiting <span class="sec-status pass">Active</span></h3>
+        <p>Per-agent rate limits enforced at execution layer. Automatic incident creation and suspension on repeated violations.</p>
+      </div>
+      <div class="sec-card">
+        <h3>🛑 Suspension Controls <span class="sec-status pass">Active</span></h3>
+        <p>Agents can be suspended instantly. Suspended agents cannot be authorized or execute — immediate hard stop.</p>
+      </div>
+      <div class="sec-card">
+        <h3>🌐 HTTPS Only <span class="sec-status pass">Active</span></h3>
+        <p>All API traffic over TLS 1.3. SSL certificate on api.agentpassport.in. HTTP requests rejected.</p>
+      </div>
+      <div class="sec-card">
+        <h3>🧠 AI Behavioral Analysis <span class="sec-status pass">Active</span></h3>
+        <p>Gemini AI continuously analyzes agent behavior patterns and flags anomalies. Behavioral summaries available per agent.</p>
+      </div>
+      <div class="sec-card">
+        <h3>📋 Immutable Audit Logs <span class="sec-status pass">Active</span></h3>
+        <p>Every execution, authorization, and incident is logged immutably in Supabase. Audit logs cannot be modified after creation.</p>
+      </div>
+      <div class="sec-card">
+        <h3>🏗️ Supabase PostgreSQL <span class="sec-status pass">Active</span></h3>
+        <p>Data stored in Supabase with row-level security, automatic backups, and enterprise-grade PostgreSQL infrastructure.</p>
+      </div>
+    </div>
+
+    <div style="margin-top:48px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:32px">
+      <div class="section-label">Responsible Disclosure</div>
+      <p style="color:var(--text2);font-size:15px;margin-top:12px">Found a security vulnerability? We take security reports seriously. Please email us at <a href="/cdn-cgi/l/email-protection#fe969b929291be9f999b908a8e9f8d8d8e918c8ad09790" style="color:var(--blue-bright);text-decoration:none"><span class="__cf_email__" data-cfemail="b4dcd1d8d8dbf4d5d3d1dac0c4d5c7c7c4dbc6c09addda">[email&#160;protected]</span></a> with details. We will respond within 48 hours and provide a fix timeline. We do not take legal action against good-faith security researchers.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ LEGAL ═══════════════════════════ -->
+<div class="page" id="page-legal">
+  <div class="section">
+    <div class="section-label">Legal</div>
+    <h2>Legal <span>Documents</span></h2>
+
+    <div class="legal-tabs">
+      <button class="legal-tab active" onclick="showLegal('terms', this)">Terms of Service</button>
+      <button class="legal-tab" onclick="showLegal('privacy', this)">Privacy Policy</button>
+      <button class="legal-tab" onclick="showLegal('data', this)">Data Processing</button>
+      <button class="legal-tab" onclick="showLegal('sla', this)">SLA</button>
+    </div>
+
+    <div class="legal-content active" id="legal-terms">
+      <h3>Terms of Service</h3>
+      <p><strong style="color:var(--text)">Effective Date:</strong> April 2025 | <strong style="color:var(--text)">Provider:</strong> AgentAudit (agentpassport.in)</p>
+      <h3>1. Acceptance</h3>
+      <p>By accessing or using the AgentAudit API or website, you agree to be bound by these Terms. If you do not agree, do not use the service.</p>
+      <h3>2. Service Description</h3>
+      <p>AgentAudit provides trust and accountability infrastructure for AI agents via REST API. Features include authorization tokens, execution validation, audit logging, risk scoring, and behavioral analytics.</p>
+      <h3>3. API Usage</h3>
+      <p>Your API key is confidential. You are responsible for all activity under your key. Do not share your key publicly. You may not use the API to violate any laws, harm third parties, or attempt to reverse-engineer the service.</p>
+      <h3>4. Plan Limits</h3>
+      <p>Free plan: 3 agents, 500 executions/month. Growth plan: 25 agents, 50,000 executions/month. Exceeding limits may result in API errors or temporary suspension until the next billing cycle.</p>
+      <h3>5. Payments</h3>
+      <p>Growth and Enterprise plans are billed monthly via Razorpay. No refunds for partial months. Enterprise pricing is custom and subject to a separate agreement.</p>
+      <h3>6. Termination</h3>
+      <p>Either party may terminate at any time. Upon termination, your data will be retained for 30 days then deleted. We may suspend accounts that violate these Terms immediately.</p>
+      <h3>7. Limitation of Liability</h3>
+      <p>AgentAudit is not liable for indirect, incidental, or consequential damages. Our total liability is limited to the amount you paid in the last 3 months.</p>
+      <h3>8. Governing Law</h3>
+      <p>These Terms are governed by the laws of India. Disputes shall be resolved in Rajkot, Gujarat.</p>
+    </div>
+
+    <div class="legal-content" id="legal-privacy">
+      <h3>Privacy Policy</h3>
+      <p><strong style="color:var(--text)">Effective Date:</strong> April 2025</p>
+      <h3>Data We Collect</h3>
+      <ul>
+        <li>Account information: email, organization name</li>
+        <li>API usage data: execution logs, agent actions, risk scores</li>
+        <li>Technical data: IP addresses, request timestamps</li>
+      </ul>
+      <h3>How We Use Data</h3>
+      <ul>
+        <li>Providing the AgentAudit service</li>
+        <li>Generating risk scores and behavioral summaries</li>
+        <li>Sending transactional emails (API keys, billing)</li>
+        <li>Improving the service</li>
+      </ul>
+      <h3>Data Storage</h3>
+      <p>Data is stored in Supabase (PostgreSQL) hosted in the EU. We do not sell your data to third parties. We do not use your agent data for training AI models.</p>
+      <h3>Data Retention</h3>
+      <p>Audit logs: 7 days (Free), 90 days (Growth), custom (Enterprise). Account data: retained until account deletion + 30 days.</p>
+      <h3>Your Rights</h3>
+      <p>You have the right to access, correct, or delete your data at any time. Email <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="88e0ede4e4e7c8e9efede6fcf8e9fbfbf8e7fafca6e1e6">[email&#160;protected]</a> to submit a data request.</p>
+      <h3>Contact</h3>
+      <p>Privacy questions: <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="365e535a5a597657515358424657454546594442185f58">[email&#160;protected]</a></p>
+    </div>
+
+    <div class="legal-content" id="legal-data">
+      <h3>Data Processing Agreement</h3>
+      <p>This Data Processing Agreement ("DPA") applies to customers on the Growth or Enterprise plan who process personal data through AgentAudit.</p>
+      <h3>Roles</h3>
+      <p>You (the customer) are the Data Controller. AgentAudit is the Data Processor. We process data only on your documented instructions.</p>
+      <h3>Sub-processors</h3>
+      <ul>
+        <li><strong style="color:var(--text)">Supabase</strong> — Database storage (EU)</li>
+        <li><strong style="color:var(--text)">Render</strong> — API hosting (US)</li>
+        <li><strong style="color:var(--text)">Google Gemini</strong> — AI analysis (data not retained by Google)</li>
+        <li><strong style="color:var(--text)">Resend</strong> — Transactional email</li>
+      </ul>
+      <h3>Security Measures</h3>
+      <p>SHA-256 key hashing, TLS 1.3 in transit, PostgreSQL encryption at rest, row-level security, access controls.</p>
+      <h3>Breach Notification</h3>
+      <p>We will notify you within 72 hours of becoming aware of a personal data breach affecting your data.</p>
+    </div>
+
+    <div class="legal-content" id="legal-sla">
+      <h3>Service Level Agreement</h3>
+      <p><strong style="color:var(--text)">Applies to:</strong> Growth and Enterprise plans</p>
+      <h3>Uptime Commitment</h3>
+      <p>We commit to 99.9% monthly uptime for the AgentAudit API. Scheduled maintenance is excluded and communicated 48 hours in advance.</p>
+      <h3>Response Times</h3>
+      <ul>
+        <li>API latency: &lt; 200ms p95</li>
+        <li>Critical incidents: Response within 1 hour</li>
+        <li>Support email: Response within 24 hours (Growth), 4 hours (Enterprise)</li>
+      </ul>
+      <h3>Credits</h3>
+      <p>If uptime falls below 99.9% in a month, you are eligible for service credits: 99.0–99.9% = 10% credit; 95.0–99.0% = 25% credit; below 95% = 50% credit.</p>
+      <h3>Exclusions</h3>
+      <p>SLA does not apply to: force majeure events, third-party service outages, customer-caused issues, or Free plan usage.</p>
+    </div>
+  </div>
+</div>
+
+  <!-- ═══════════════════════════ CONTACT ═══════════════════════════ -->
+<div class="page" id="page-contact">
+  <div class="section">
+    <div class="section-label">Contact</div>
+    <h2>Get in <span>touch</span></h2>
+
+    <div class="contact-grid">
+      <div class="contact-form">
+        <div class="form-group">
+          <label>Your Name</label>
+          <input type="text" placeholder="Arjun Sharma">
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" placeholder="arjun@startup.in">
+        </div>
+        <div class="form-group">
+          <label>Company</label>
+          <input type="text" placeholder="Your startup name">
+        </div>
+        <div class="form-group">
+          <label>Topic</label>
+          <select>
+            <option>Technical Support</option>
+            <option>Sales / Enterprise</option>
+            <option>Billing</option>
+            <option>Security Report</option>
+            <option>Partnership</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Message</label>
+          <textarea rows="5" placeholder="Tell us what you're building and how we can help..."></textarea>
+        </div>
+        <button class="btn-primary" onclick="alert('Message sent! We will reply within 24 hours.')">Send Message →</button>
+      </div>
+
+      <div class="contact-info">
+        <div class="contact-item">
+          <div class="contact-icon">📧</div>
+          <div>
+            <h4>Email</h4>
+            <p><a href="/cdn-cgi/l/email-protection#3d55585151527d5c5a5853494d5c4e4e4d524f49135453"><span class="__cf_email__" data-cfemail="b0d8d5dcdcdff0d1d7d5dec4c0d1c3c3c0dfc2c49ed9de">[email&#160;protected]</span></a></p>
+            <p style="font-size:12px;color:var(--text3);margin-top:2px">Response within 24 hours</p>
+          </div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-icon">📍</div>
+          <div>
+            <h4>Location</h4>
+            <p>Rajkot, Gujarat, India</p>
+          </div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-icon">🌐</div>
+          <div>
+            <h4>API Status</h4>
+            <p><a href="#" onclick="showPage('status')">api.agentpassport.in — Operational</a></p>
+          </div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-icon">⚡</div>
+          <div>
+            <h4>API Endpoint</h4>
+            <p><a href="https://api.agentpassport.in/health" target="_blank">api.agentpassport.in/health</a></p>
+          </div>
+        </div>
+
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px;margin-top:8px">
+          <div style="font-size:13px;color:var(--text3);font-family:'JetBrains Mono',monospace;margin-bottom:14px;text-transform:uppercase;letter-spacing:1px">For Enterprise Sales</div>
+          <p style="font-size:14px;color:var(--text2);margin-bottom:16px">Need unlimited agents, custom SLA, or on-premise deployment? Let's talk.</p>
+          <button class="btn-primary" onclick="document.querySelector('.contact-form select').value='Sales / Enterprise'" style="font-size:14px;padding:10px 20px">Book Enterprise Call</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ STATUS ═══════════════════════════ -->
+<div class="page" id="page-status">
+  <div class="section">
+    <div class="section-label">System Status</div>
+    <h2>Service <span>Status</span></h2>
+
+    <div class="status-header">
+      <div class="status-dot-big"></div>
+      <div class="status-header-text">
+        <h2>All Systems Operational</h2>
+        <p>Last checked: just now · Next check: in 60s</p>
+      </div>
+    </div>
+
+    <div class="status-items">
+      <div class="status-item">
+        <div>
+          <h4>API — api.agentpassport.in</h4>
+          <p>Core REST API endpoints</p>
+        </div>
+        <div class="status-badge operational">● Operational</div>
+      </div>
+      <div class="status-item">
+        <div>
+          <h4>Authorization Service</h4>
+          <p>Token creation and validation</p>
+        </div>
+        <div class="status-badge operational">● Operational</div>
+      </div>
+      <div class="status-item">
+        <div>
+          <h4>Execution Validation</h4>
+          <p>7-layer security check engine</p>
+        </div>
+        <div class="status-badge operational">● Operational</div>
+      </div>
+      <div class="status-item">
+        <div>
+          <h4>Gemini AI Analysis</h4>
+          <p>Risk scoring &amp; behavioral summaries</p>
+        </div>
+        <div class="status-badge operational">● Operational</div>
+      </div>
+      <div class="status-item">
+        <div>
+          <h4>Supabase Database</h4>
+          <p>PostgreSQL — audit logs, agents, orgs</p>
+        </div>
+        <div class="status-badge operational">● Operational</div>
+      </div>
+      <div class="status-item">
+        <div>
+          <h4>Audit Log Service</h4>
+          <p>Execution logging &amp; retrieval</p>
+        </div>
+        <div class="status-badge operational">● Operational</div>
+      </div>
+      <div class="status-item">
+        <div>
+          <h4>Incident Detection</h4>
+          <p>Anomaly detection engine</p>
+        </div>
+        <div class="status-badge operational">● Operational</div>
+      </div>
+      <div class="status-item">
+        <div>
+          <h4>Website — agentpassport.in</h4>
+          <p>Marketing site &amp; docs</p>
+        </div>
+        <div class="status-badge operational">● Operational</div>
+      </div>
+    </div>
+
+    <div style="margin-top:40px">
+      <div style="font-size:13px;color:var(--text3);font-family:'JetBrains Mono',monospace;margin-bottom:12px;text-transform:uppercase;letter-spacing:1px">90-Day Uptime</div>
+      <div class="uptime-bars">
+        <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+          for(let i=0;i<90;i++){document.write('<div class="uptime-bar'+(Math.random()>0.99?' incident':'')+'"></div>')}
+        </script>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-top:6px;font-family:'JetBrains Mono',monospace">
+        <span>90 days ago</span>
+        <span style="color:var(--green);font-weight:600">99.9% uptime</span>
+        <span>Today</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ SIGNUP ═══════════════════════════ -->
+<div class="page" id="page-signup">
+  <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:40px 24px">
+    <div style="width:100%;max-width:440px">
+      <div style="text-align:center;margin-bottom:32px">
+        <div class="nav-logo-icon" style="width:48px;height:48px;font-size:22px;margin:0 auto 16px">A</div>
+        <h1 style="font-size:28px;font-weight:800;letter-spacing:-1px;margin-bottom:8px">Create your account</h1>
+        <p style="color:var(--text2);font-size:15px">Free forever · 3 agents · 500 executions/month</p>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border2);border-radius:16px;padding:32px">
+        <div class="form-group" style="margin-bottom:16px">
+          <label>Organization Name</label>
+          <input type="text" id="signup-org" placeholder="Acme AI Labs">
+        </div>
+        <div class="form-group" style="margin-bottom:16px">
+          <label>Email</label>
+          <input type="email" id="signup-email" placeholder="you@company.com">
+        </div>
+        <div class="form-group" style="margin-bottom:24px">
+          <label>Password</label>
+          <input type="password" id="signup-password" placeholder="Min 8 characters">
+        </div>
+        <div id="signup-error" style="display:none;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:12px 14px;font-size:13px;color:#ef4444;margin-bottom:16px"></div>
+        <button class="btn-primary" id="signup-btn" onclick="doSignup()" style="width:100%;justify-content:center;font-size:16px;padding:14px">
+          Create Free Account →
+        </button>
+        <p style="text-align:center;font-size:13px;color:var(--text3);margin-top:16px">
+          Already have an account? <a onclick="showPage('login')" style="color:var(--blue-bright);cursor:pointer">Log in</a>
+        </p>
+      </div>
+      <p style="text-align:center;font-size:12px;color:var(--text3);margin-top:16px">
+        By signing up you agree to our <a onclick="showPage('legal')" style="color:var(--text3)">Terms of Service</a>
+      </p>
+    </div>
+  </div>
+</div>
   
+  <!-- ═══════════════════════════ LOGIN ═══════════════════════════ -->
+<div class="page" id="page-login">
+  <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:40px 24px">
+    <div style="width:100%;max-width:440px">
+      <div style="text-align:center;margin-bottom:32px">
+        <div class="nav-logo-icon" style="width:48px;height:48px;font-size:22px;margin:0 auto 16px">A</div>
+        <h1 style="font-size:28px;font-weight:800;letter-spacing:-1px;margin-bottom:8px">Welcome back</h1>
+        <p style="color:var(--text2);font-size:15px">Log in to your AgentAudit account</p>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border2);border-radius:16px;padding:32px">
+        <div class="form-group" style="margin-bottom:16px">
+          <label>Email</label>
+          <input type="email" id="login-email" placeholder="you@company.com">
+        </div>
+        <div class="form-group" style="margin-bottom:24px">
+          <label>Password</label>
+          <input type="password" id="login-password" placeholder="Your password">
+        </div>
+        <div id="login-error" style="display:none;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:12px 14px;font-size:13px;color:#ef4444;margin-bottom:16px"></div>
+        <button class="btn-primary" id="login-btn" onclick="doLogin()" style="width:100%;justify-content:center;font-size:16px;padding:14px">
+          Log In →
+        </button>
+        <p style="text-align:center;font-size:13px;color:var(--text3);margin-top:16px">
+          Don't have an account? <a onclick="showPage('signup')" style="color:var(--blue-bright);cursor:pointer">Sign up free</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ DASHBOARD ═══════════════════════════ -->
+<div class="page" id="page-dashboard">
+  <div class="section" style="max-width:800px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:40px;flex-wrap:wrap;gap:16px">
+      <div>
+        <div class="section-label">Dashboard</div>
+        <h2 style="margin-bottom:4px">Welcome, <span id="dash-org-name">—</span></h2>
+        <p style="color:var(--text3);font-size:13px;font-family:'JetBrains Mono',monospace" id="dash-org-id"></p>
+      </div>
+      <button class="btn-secondary" onclick="doLogout()" style="font-size:13px;padding:8px 16px">Log out</button>
+    </div>
+
+    <!-- Plan Badge -->
+    <div style="background:linear-gradient(135deg,rgba(59,130,246,0.1),rgba(34,211,238,0.05));border:1px solid rgba(59,130,246,0.25);border-radius:12px;padding:20px 24px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="font-size:22px">⚡</div>
+        <div>
+          <div style="font-size:13px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;font-family:'JetBrains Mono',monospace">Current Plan</div>
+          <div style="font-size:18px;font-weight:700;text-transform:capitalize" id="dash-plan">free</div>
+        </div>
+      </div>
+      <button class="btn-primary" onclick="showPage('pricing')" style="font-size:13px;padding:8px 18px">Upgrade to Growth →</button>
+    </div>
+
+    <!-- API Key -->
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:24px;margin-bottom:24px">
+      <div style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;font-family:'JetBrains Mono',monospace;margin-bottom:16px">Your API Key</div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 16px;font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--cyan);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+        <span id="dash-api-key">—</span>
+        <button class="copy-btn" id="copy-key-btn" onclick="copyApiKey()" style="font-size:12px;padding:6px 14px">Copy</button>
+      </div>
+      <p style="font-size:12px;color:var(--text3);margin-top:10px">⚠️ This key was shown once at signup. Use it in the <code style="font-family:'JetBrains Mono',monospace;background:var(--surface2);padding:2px 5px;border-radius:3px">x-api-key</code> header for all API calls.</p>
+    </div>
+
+    <!-- Quick Stats -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-bottom:24px">
+      <div class="card" style="padding:20px;text-align:center">
+        <div style="font-size:28px;font-weight:800;color:var(--blue-bright)" id="dash-agents">3</div>
+        <div style="font-size:12px;color:var(--text3);margin-top:4px">Max Agents</div>
+      </div>
+      <div class="card" style="padding:20px;text-align:center">
+        <div style="font-size:28px;font-weight:800;color:var(--cyan)" id="dash-execs">500</div>
+        <div style="font-size:12px;color:var(--text3);margin-top:4px">Executions/mo</div>
+      </div>
+      <div class="card" style="padding:20px;text-align:center">
+        <div style="font-size:28px;font-weight:800;color:var(--green)">✓</div>
+        <div style="font-size:12px;color:var(--text3);margin-top:4px">API Active</div>
+      </div>
+    </div>
+
+    <!-- Quick Start -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px">
+      <div style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;font-family:'JetBrains Mono',monospace;margin-bottom:16px">Quick Start</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;line-height:2;background:var(--bg2);padding:16px;border-radius:8px;color:var(--text2)">
+        <div><span style="color:#4a5568"># Register your first agent</span></div>
+        <div><span style="color:#22d3ee">curl</span> -X POST https://api.agentpassport.in/agents \</div>
+        <div>&nbsp;&nbsp;-H <span style="color:#86efac">"x-api-key: <span id="dash-key-inline">your_key</span>"</span> \</div>
+        <div>&nbsp;&nbsp;-d <span style="color:#86efac">'{"name":"my-first-agent"}'</span></div>
+      </div>
+      <button class="btn-secondary" onclick="showPage('docs')" style="margin-top:16px;font-size:13px;padding:8px 16px">View Full Docs →</button>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <a class="nav-logo" onclick="showPage('home')" style="display:inline-flex">
+        <div class="nav-logo-icon">A</div>
+        AgentAudit
+      </a>
+      <p>Trust and accountability infrastructure for AI agents. Authorize, log, and audit every agent action — automatically.</p>
+    </div>
+    <div class="footer-links">
+      <h4>Product</h4>
+      <a onclick="showPage('home')">Features</a>
+      <a onclick="showPage('pricing')">Pricing</a>
+      <a onclick="showPage('docs')">API Docs</a>
+      <a onclick="showPage('status')">Status</a>
+    </div>
+    <div class="footer-links">
+      <h4>Company</h4>
+      <a onclick="showPage('about')">About</a>
+      <a onclick="showPage('security')">Security</a>
+      <a onclick="showPage('contact')">Contact</a>
+    </div>
+    <div class="footer-links">
+      <h4>Legal</h4>
+      <a onclick="showPage('legal');showLegal('terms',null)">Terms</a>
+      <a onclick="showPage('legal');showLegal('privacy',null)">Privacy</a>
+      <a onclick="showPage('legal');showLegal('data',null)">Data Processing</a>
+      <a onclick="showPage('legal');showLegal('sla',null)">SLA</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2025 AgentAudit · agentpassport.in · <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="9df5f8f1f1f2ddfcfaf8f3e9edfceeeeedf2efe9b3f4f3">[email&#160;protected]</a></p>
+    <div class="footer-status">All Systems Operational</div>
+  </div>
+</footer>
+
+<script>
+  const API = 'https://api.agentpassport.in';
+
+  // ── AUTH STATE ──
+  let authToken = localStorage.getItem('aa_token');
+  let authOrg = JSON.parse(localStorage.getItem('aa_org') || 'null');
+  let authApiKey = localStorage.getItem('aa_apikey');
+
+  function updateNavForAuth() {
+    const loggedIn = !!authToken;
+    document.getElementById('nav-login-btn').style.display = loggedIn ? 'none' : '';
+    document.getElementById('nav-signup-btn').style.display = loggedIn ? 'none' : '';
+    document.getElementById('nav-dashboard-btn').style.display = loggedIn ? '' : 'none';
+  }
+
+  function showPage(name) {
+    // Redirect to dashboard if logged in and trying to access login/signup
+    if (authToken && (name === 'login' || name === 'signup')) name = 'dashboard';
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    const pg = document.getElementById('page-' + name);
+    if (pg) { pg.classList.add('active'); window.scrollTo(0,0); }
+    document.getElementById('navLinks').classList.remove('open');
+    if (name === 'dashboard') loadDashboard();
+  }
+
+  function showLegal(tab, btn) {
+    document.querySelectorAll('.legal-content').forEach(c => c.classList.remove('active'));
+    document.querySelectorAll('.legal-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('legal-' + tab).classList.add('active');
+    if (btn) btn.classList.add('active');
+    else {
+      const tabs = document.querySelectorAll('.legal-tab');
+      const map = {terms:0,privacy:1,data:2,sla:3};
+      if(tabs[map[tab]]) tabs[map[tab]].classList.add('active');
+    }
+  }
+
+  function toggleMobile() {
+    document.getElementById('navLinks').classList.toggle('open');
+  }
+
+  function copyText(text, btn) {
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = 'Copy', 1500);
+    });
+  }
+
+  // ── SIGNUP ──
+  async function doSignup() {
+    const org = document.getElementById('signup-org').value.trim();
+    const email = document.getElementById('signup-email').value.trim();
+    const password = document.getElementById('signup-password').value;
+    const errEl = document.getElementById('signup-error');
+    const btn = document.getElementById('signup-btn');
+    errEl.style.display = 'none';
+
+    if (!org || !email || !password) {
+      errEl.textContent = 'All fields are required.'; errEl.style.display = 'block'; return;
+    }
+    if (password.length < 8) {
+      errEl.textContent = 'Password must be at least 8 characters.'; errEl.style.display = 'block'; return;
+    }
+
+    btn.textContent = 'Creating account...'; btn.disabled = true;
+    try {
+      const res = await fetch(API + '/auth/signup', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({email, password, orgName: org})
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Signup failed');
+
+      // Save API key (shown only once)
+      localStorage.setItem('aa_apikey', data.apiKey);
+      authApiKey = data.apiKey;
+
+      // Now login to get token
+      const loginRes = await fetch(API + '/auth/login', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({email, password})
+      });
+      const loginData = await loginRes.json();
+      if (!loginRes.ok) throw new Error('Account created! Please log in.');
+
+      authToken = loginData.token;
+      authOrg = loginData.org;
+      localStorage.setItem('aa_token', authToken);
+      localStorage.setItem('aa_org', JSON.stringify(authOrg));
+      updateNavForAuth();
+      showPage('dashboard');
+    } catch(e) {
+      errEl.textContent = e.message; errEl.style.display = 'block';
+    }
+    btn.textContent = 'Create Free Account →'; btn.disabled = false;
+  }
+
+  // ── LOGIN ──
+  async function doLogin() {
+    const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+    const errEl = document.getElementById('login-error');
+    const btn = document.getElementById('login-btn');
+    errEl.style.display = 'none';
+
+    if (!email || !password) {
+      errEl.textContent = 'Email and password required.'; errEl.style.display = 'block'; return;
+    }
+
+    btn.textContent = 'Logging in...'; btn.disabled = true;
+    try {
+      const res = await fetch(API + '/auth/login', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({email, password})
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Login failed');
+
+      authToken = data.token;
+      authOrg = data.org;
+      localStorage.setItem('aa_token', authToken);
+      localStorage.setItem('aa_org', JSON.stringify(authOrg));
+      updateNavForAuth();
+      showPage('dashboard');
+    } catch(e) {
+      errEl.textContent = e.message; errEl.style.display = 'block';
+    }
+    btn.textContent = 'Log In →'; btn.disabled = false;
+  }
+
+  // ── LOGOUT ──
+  function doLogout() {
+    authToken = null; authOrg = null;
+    localStorage.removeItem('aa_token');
+    localStorage.removeItem('aa_org');
+    localStorage.removeItem('aa_apikey');
+    updateNavForAuth();
+    showPage('home');
+  }
+
+  // ── DASHBOARD ──
+  function loadDashboard() {
+    if (!authOrg) return;
+    document.getElementById('dash-org-name').textContent = authOrg.name || '—';
+    document.getElementById('dash-org-id').textContent = 'Org ID: ' + (authOrg.id || '—');
+    document.getElementById('dash-plan').textContent = authOrg.plan || 'free';
+
+    const key = authApiKey || authOrg.raw_key_preview || 'Check your signup email';
+    document.getElementById('dash-api-key').textContent = key;
+    document.getElementById('dash-key-inline').textContent = key;
+
+    if (authOrg.plan === 'growth') {
+      document.getElementById('dash-agents').textContent = '25';
+      document.getElementById('dash-execs').textContent = '50k';
+    }
+  }
+
+  function copyApiKey() {
+    const key = document.getElementById('dash-api-key').textContent;
+    navigator.clipboard.writeText(key).then(() => {
+      const btn = document.getElementById('copy-key-btn');
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = 'Copy', 1500);
+    });
+  }
+
+  // ── INIT ──
+  updateNavForAuth();
+  if (authToken && authOrg) loadDashboard();
+</script>
+</body>
+</html>
