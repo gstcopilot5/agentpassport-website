@@ -466,6 +466,7 @@
     .hero { padding: 60px 24px 60px; }
   }
 </style>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 </head>
 <body>
 
@@ -1273,7 +1274,7 @@
           <div style="font-size:18px;font-weight:700;text-transform:capitalize" id="dash-plan">free</div>
         </div>
       </div>
-      <button class="btn-primary" onclick="showPage('pricing')" style="font-size:13px;padding:8px 18px">Upgrade to Growth →</button>
+      <button class="btn-primary" onclick="startPayment()" style="font-size:13px;padding:8px 18px">Upgrade to Growth →</button>
     </div>
 
     <!-- API Key -->
@@ -1520,6 +1521,49 @@
       btn.textContent = 'Copied!';
       setTimeout(() => btn.textContent = 'Copy', 1500);
     });
+  }
+
+  // ── PAYMENTS ──
+  async function startPayment() {
+    const btn = event.target;
+    btn.textContent = 'Loading...'; btn.disabled = true;
+    try {
+      const res = await fetch(API + '/payments/create-order', {
+        method: 'POST',
+        headers: {'Authorization': 'Bearer ' + authToken, 'Content-Type': 'application/json'}
+      });
+      const order = await res.json();
+
+      const options = {
+        key: order.keyId,
+        amount: order.amount,
+        currency: order.currency,
+        name: 'AgentAudit',
+        description: 'Growth Plan - ₹4,999/month',
+        order_id: order.orderId,
+        handler: async function(response) {
+          const verifyRes = await fetch(API + '/payments/verify', {
+            method: 'POST',
+            headers: {'Authorization': 'Bearer ' + authToken, 'Content-Type': 'application/json'},
+            body: JSON.stringify(response)
+          });
+          const data = await verifyRes.json();
+          if (data.success) {
+            authOrg.plan = 'growth';
+            localStorage.setItem('aa_org', JSON.stringify(authOrg));
+            alert('🎉 Upgraded to Growth plan!');
+            loadDashboard();
+          }
+        },
+        prefill: { email: authOrg?.email || '' },
+        theme: { color: '#3b82f6' }
+      };
+      const rzp = new Razorpay(options);
+      rzp.open();
+    } catch(e) {
+      alert('Payment error: ' + e.message);
+    }
+    btn.textContent = 'Upgrade to Growth →'; btn.disabled = false;
   }
 
   // ── INIT ──
