@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LangChain Integration — AgentAudit</title>
+<meta name="description" content="Integrate AgentAudit with LangChain in minutes. Add trust, logging, and safety checks to your AI agents automatically.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080c10;
+    --bg2: #0d1117;
+    --bg3: #161b22;
+    --border: #21262d;
+    --text: #e6edf3;
+    --muted: #7d8590;
+    --accent: #00ff88;
+    --accent2: #00d4ff;
+    --warn: #ff9500;
+    --red: #ff4444;
+    --code-bg: #0d1117;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* Grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: 
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 40px 40px;
+    opacity: 0.3;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Nav */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(8,12,16,0.9);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: var(--text);
+    font-weight: 800;
+    font-size: 18px;
+    letter-spacing: -0.5px;
+  }
+
+  .logo-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+    box-shadow: 0 0 10px var(--accent);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(0.8); }
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 24px;
+    list-style: none;
+  }
+
+  .nav-links a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 14px;
+    transition: color 0.2s;
+  }
+
+  .nav-links a:hover { color: var(--text); }
+
+  /* Layout */
+  .layout {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    max-width: 1200px;
+    margin: 0 auto;
+    min-height: calc(100vh - 60px);
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Sidebar */
+  .sidebar {
+    border-right: 1px solid var(--border);
+    padding: 32px 20px;
+    position: sticky;
+    top: 60px;
+    height: calc(100vh - 60px);
+    overflow-y: auto;
+  }
+
+  .sidebar-section {
+    margin-bottom: 28px;
+  }
+
+  .sidebar-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .sidebar-links {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .sidebar-links a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 14px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    display: block;
+    transition: all 0.2s;
+  }
+
+  .sidebar-links a:hover {
+    color: var(--text);
+    background: var(--bg3);
+  }
+
+  .sidebar-links a.active {
+    color: var(--accent);
+    background: rgba(0,255,136,0.08);
+  }
+
+  /* Main content */
+  .main {
+    padding: 48px 56px;
+    max-width: 800px;
+  }
+
+  /* Breadcrumb */
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 32px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .breadcrumb span { color: var(--border); }
+
+  /* Hero */
+  .page-hero {
+    margin-bottom: 48px;
+    padding-bottom: 40px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .integration-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0,212,255,0.1);
+    border: 1px solid rgba(0,212,255,0.2);
+    border-radius: 20px;
+    padding: 4px 14px;
+    font-size: 12px;
+    color: var(--accent2);
+    margin-bottom: 20px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 500;
+  }
+
+  h1 {
+    font-size: 42px;
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -1.5px;
+    margin-bottom: 16px;
+  }
+
+  h1 span {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .page-desc {
+    font-size: 18px;
+    color: var(--muted);
+    line-height: 1.6;
+    max-width: 560px;
+  }
+
+  /* Sections */
+  .section {
+    margin-bottom: 56px;
+    animation: fadeUp 0.5s ease both;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .section:nth-child(2) { animation-delay: 0.1s; }
+  .section:nth-child(3) { animation-delay: 0.2s; }
+  .section:nth-child(4) { animation-delay: 0.3s; }
+  .section:nth-child(5) { animation-delay: 0.4s; }
+
+  h2 {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  h2::before {
+    content: '';
+    display: block;
+    width: 3px;
+    height: 20px;
+    background: var(--accent);
+    border-radius: 2px;
+    box-shadow: 0 0 8px var(--accent);
+  }
+
+  h3 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  p {
+    color: #8b949e;
+    font-size: 15px;
+    margin-bottom: 16px;
+    line-height: 1.7;
+  }
+
+  /* Code blocks */
+  .code-block {
+    position: relative;
+    margin: 20px 0;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+
+  .code-header {
+    background: var(--bg3);
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .code-lang {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .lang-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+
+  .copy-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 4px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    font-family: 'IBM Plex Mono', monospace;
+    transition: all 0.2s;
+  }
+
+  .copy-btn:hover {
+    color: var(--text);
+    border-color: var(--accent);
+    background: rgba(0,255,136,0.05);
+  }
+
+  .copy-btn.copied {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+
+  pre {
+    background: var(--code-bg);
+    padding: 20px 20px;
+    overflow-x: auto;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13.5px;
+    line-height: 1.7;
+  }
+
+  /* Syntax highlight */
+  .k { color: #ff7b72; } /* keyword */
+  .s { color: #a5d6ff; } /* string */
+  .c { color: #8b949e; font-style: italic; } /* comment */
+  .f { color: #d2a8ff; } /* function */
+  .n { color: #79c0ff; } /* variable name */
+  .o { color: var(--accent); } /* operator/special */
+  .num { color: #79c0ff; } /* number */
+
+  /* Inline code */
+  code {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--accent2);
+  }
+
+  /* Info boxes */
+  .callout {
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 20px 0;
+    display: flex;
+    gap: 14px;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .callout.info {
+    background: rgba(0,212,255,0.06);
+    border: 1px solid rgba(0,212,255,0.2);
+    color: #8ec8e8;
+  }
+
+  .callout.warn {
+    background: rgba(255,149,0,0.06);
+    border: 1px solid rgba(255,149,0,0.2);
+    color: #c8a870;
+  }
+
+  .callout.success {
+    background: rgba(0,255,136,0.06);
+    border: 1px solid rgba(0,255,136,0.2);
+    color: #70c8a0;
+  }
+
+  .callout-icon {
+    font-size: 18px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  /* Steps */
+  .steps {
+    counter-reset: steps;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .step {
+    display: flex;
+    gap: 20px;
+    padding-bottom: 32px;
+    position: relative;
+  }
+
+  .step:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    left: 16px;
+    top: 36px;
+    bottom: 0;
+    width: 1px;
+    background: var(--border);
+  }
+
+  .step-num {
+    counter-increment: steps;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--accent);
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+  }
+
+  .step-body { flex: 1; padding-top: 4px; }
+
+  .step-title {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+
+  /* Method table */
+  .method-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    margin: 20px 0;
+  }
+
+  .method-table th {
+    text-align: left;
+    padding: 10px 14px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 500;
+  }
+
+  .method-table td {
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    vertical-align: top;
+  }
+
+  .method-table tr:hover td {
+    background: rgba(255,255,255,0.02);
+  }
+
+  .method-table code {
+    font-size: 12px;
+  }
+
+  .tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+  }
+
+  .tag.get { background: rgba(0,212,255,0.1); color: var(--accent2); }
+  .tag.post { background: rgba(0,255,136,0.1); color: var(--accent); }
+
+  /* Footer nav */
+  .doc-nav {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 40px;
+    margin-top: 40px;
+    border-top: 1px solid var(--border);
+  }
+
+  .doc-nav a {
+    text-decoration: none;
+    color: var(--muted);
+    font-size: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    transition: color 0.2s;
+  }
+
+  .doc-nav a:hover { color: var(--accent); }
+  .doc-nav .label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; font-family: 'IBM Plex Mono', monospace; }
+  .doc-nav .title { font-weight: 700; font-size: 15px; }
+
+  @media (max-width: 900px) {
+    .sidebar { display: none !important; }
+    .layout { display: block !important; grid-template-columns: unset !important; }
+    .main { display: block !important; max-width: 100% !important; width: 100% !important; padding: 24px 16px !important; }
+    h1 { font-size: 28px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="/">
+    <div class="logo-dot"></div>
+    AgentAudit
+  </a>
+  <ul class="nav-links">
+    <li><a href="/docs">Docs</a></li>
+    <li><a href="/pricing">Pricing</a></li>
+    <li><a href="https://dashboard.agentpassport.in">Dashboard</a></li>
+  </ul>
+</nav>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Getting Started</div>
+      <ul class="sidebar-links">
+        <li><a href="/docs">Introduction</a></li>
+        <li><a href="/docs/quickstart">Quickstart</a></li>
+        <li><a href="/docs/authentication">Authentication</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Integrations</div>
+      <ul class="sidebar-links">
+        <li><a href="/docs/langchain" class="active">LangChain</a></li>
+        <li><a href="/docs/openai">OpenAI Agents</a></li>
+        <li><a href="/docs/crewai">CrewAI</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">API Reference</div>
+      <ul class="sidebar-links">
+        <li><a href="/docs/agents">Agents</a></li>
+        <li><a href="/docs/execute">Execute</a></li>
+        <li><a href="/docs/audit">Audit Logs</a></li>
+        <li><a href="/docs/incidents">Incidents</a></li>
+      </ul>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="breadcrumb">
+      <a href="/docs" style="color:var(--muted);text-decoration:none;">Docs</a>
+      <span>/</span>
+      <a href="/docs/integrations" style="color:var(--muted);text-decoration:none;">Integrations</a>
+      <span>/</span>
+      LangChain
+    </div>
+
+    <div class="page-hero section">
+      <div class="integration-badge">⚡ Integration Guide</div>
+      <h1>LangChain <span>+ AgentAudit</span></h1>
+      <p class="page-desc">Add trust, logging, and real-time safety checks to your LangChain agents in under 5 minutes. Every tool call gets authorized, logged, and analyzed automatically.</p>
+    </div>
+
+    <!-- Step 1: Install -->
+    <div class="section" id="install">
+      <h2>Installation</h2>
+      <p>Install the AgentAudit SDK alongside your LangChain packages.</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-lang"><div class="lang-dot"></div>bash</div>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre>npm install @agentaudit/sdk langchain @langchain/openai</pre>
+      </div>
+    </div>
+
+    <!-- Step 2: Setup -->
+    <div class="section" id="setup">
+      <h2>Basic Setup</h2>
+      <p>Initialize AgentAudit and register your agent before making any LangChain calls.</p>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <div class="step-title">Initialize the SDK</div>
+            <div class="code-block">
+              <div class="code-header">
+                <div class="code-lang"><div class="lang-dot"></div>javascript</div>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+              <pre><span class="k">const</span> <span class="n">AgentAudit</span> = <span class="f">require</span>(<span class="s">'@agentaudit/sdk'</span>);
+
+<span class="k">const</span> <span class="n">audit</span> = <span class="k">new</span> <span class="f">AgentAudit</span>(<span class="n">process</span>.env.<span class="n">AGENTAUDIT_API_KEY</span>);</pre>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <div class="step-title">Register your LangChain agent</div>
+            <div class="code-block">
+              <div class="code-header">
+                <div class="code-lang"><div class="lang-dot"></div>javascript</div>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+              <pre><span class="k">const</span> <span class="n">agent</span> = <span class="k">await</span> <span class="n">audit</span>.agents.<span class="f">register</span>({
+  name: <span class="s">'customer-support-agent'</span>,
+  description: <span class="s">'Handles customer queries via LangChain'</span>
+});
+
+<span class="c">// Store this ID — you'll use it for every execution</span>
+<span class="k">const</span> <span class="n">agentId</span> = agent.id;</pre>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <div class="step-title">Wrap tool calls with execute()</div>
+            <div class="code-block">
+              <div class="code-header">
+                <div class="code-lang"><div class="lang-dot"></div>javascript</div>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+              <pre><span class="k">const</span> { <span class="n">ChatOpenAI</span> } = <span class="f">require</span>(<span class="s">'@langchain/openai'</span>);
+<span class="k">const</span> { <span class="n">DynamicTool</span> } = <span class="f">require</span>(<span class="s">'langchain/tools'</span>);
+
+<span class="c">// Wrap any LangChain tool with AgentAudit</span>
+<span class="k">function</span> <span class="f">auditedTool</span>(name, description, handler) {
+  <span class="k">return new</span> <span class="f">DynamicTool</span>({
+    name,
+    description,
+    func: <span class="k">async</span> (input) => {
+      <span class="c">// Log + authorize through AgentAudit</span>
+      <span class="k">const</span> <span class="n">result</span> = <span class="k">await</span> <span class="n">audit</span>.execute.<span class="f">run</span>({
+        agentId: <span class="n">agentId</span>,
+        action: name,
+        params: { input }
+      });
+
+      <span class="c">// If blocked by policy, return reason</span>
+      <span class="k">if</span> (!result.allowed) {
+        <span class="k">return</span> <span class="s">`Action blocked: </span>${result.reason}<span class="s">`</span>;
+      }
+
+      <span class="c">// Otherwise run the actual tool</span>
+      <span class="k">return</span> <span class="k">await</span> <span class="f">handler</span>(input);
+    }
+  });
+}</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Full example -->
+    <div class="section" id="example">
+      <h2>Full Example</h2>
+      <p>A complete LangChain agent with AgentAudit monitoring every tool call.</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-lang"><div class="lang-dot"></div>javascript — complete example</div>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><span class="k">require</span>(<span class="s">'dotenv'</span>).config();
+<span class="k">const</span> <span class="n">AgentAudit</span> = <span class="f">require</span>(<span class="s">'@agentaudit/sdk'</span>);
+<span class="k">const</span> { <span class="n">ChatOpenAI</span> } = <span class="f">require</span>(<span class="s">'@langchain/openai'</span>);
+<span class="k">const</span> { <span class="n">AgentExecutor</span>, <span class="n">createOpenAIFunctionsAgent</span> } = <span class="f">require</span>(<span class="s">'langchain/agents'</span>);
+<span class="k">const</span> { <span class="n">DynamicTool</span> } = <span class="f">require</span>(<span class="s">'langchain/tools'</span>);
+
+<span class="k">const</span> <span class="n">audit</span> = <span class="k">new</span> <span class="f">AgentAudit</span>(<span class="n">process</span>.env.<span class="n">AGENTAUDIT_API_KEY</span>);
+
+<span class="k">async function</span> <span class="f">main</span>() {
+  <span class="c">// Register agent once (save ID to DB in production)</span>
+  <span class="k">const</span> { id: <span class="n">agentId</span> } = <span class="k">await</span> <span class="n">audit</span>.agents.<span class="f">register</span>({
+    name: <span class="s">'research-agent'</span>,
+    description: <span class="s">'Web research and summarization agent'</span>
+  });
+
+  <span class="c">// Define audited tools</span>
+  <span class="k">const</span> <span class="n">searchTool</span> = <span class="k">new</span> <span class="f">DynamicTool</span>({
+    name: <span class="s">'web_search'</span>,
+    description: <span class="s">'Search the web for information'</span>,
+    func: <span class="k">async</span> (query) => {
+      <span class="k">const</span> <span class="n">check</span> = <span class="k">await</span> <span class="n">audit</span>.execute.<span class="f">run</span>({
+        agentId,
+        action: <span class="s">'web_search'</span>,
+        params: { query }
+      });
+      <span class="k">if</span> (!check.allowed) <span class="k">return</span> <span class="s">`Blocked: </span>${check.reason}<span class="s">`</span>;
+
+      <span class="c">// Your actual search logic here</span>
+      <span class="k">return</span> <span class="s">`Search results for: </span>${query}<span class="s">`</span>;
+    }
+  });
+
+  <span class="k">const</span> <span class="n">emailTool</span> = <span class="k">new</span> <span class="f">DynamicTool</span>({
+    name: <span class="s">'send_email'</span>,
+    description: <span class="s">'Send an email to a user'</span>,
+    func: <span class="k">async</span> (params) => {
+      <span class="k">const</span> <span class="n">check</span> = <span class="k">await</span> <span class="n">audit</span>.execute.<span class="f">run</span>({
+        agentId,
+        action: <span class="s">'send_email'</span>,
+        params: <span class="f">JSON</span>.parse(params)
+      });
+      <span class="k">if</span> (!check.allowed) <span class="k">return</span> <span class="s">`Blocked: </span>${check.reason}<span class="s">`</span>;
+
+      <span class="c">// Your email sending logic here</span>
+      <span class="k">return</span> <span class="s">'Email sent successfully'</span>;
+    }
+  });
+
+  <span class="c">// Create LangChain agent normally</span>
+  <span class="k">const</span> <span class="n">llm</span> = <span class="k">new</span> <span class="f">ChatOpenAI</span>({ model: <span class="s">'gpt-4o'</span>, temperature: <span class="num">0</span> });
+  <span class="k">const</span> <span class="n">agent</span> = <span class="k">await</span> <span class="f">createOpenAIFunctionsAgent</span>({
+    llm,
+    tools: [<span class="n">searchTool</span>, <span class="n">emailTool</span>],
+    prompt: <span class="n">yourPrompt</span>
+  });
+
+  <span class="k">const</span> <span class="n">executor</span> = <span class="k">new</span> <span class="f">AgentExecutor</span>({ agent, tools: [<span class="n">searchTool</span>, <span class="n">emailTool</span>] });
+
+  <span class="c">// Run — all tool calls automatically logged in AgentAudit</span>
+  <span class="k">const</span> <span class="n">result</span> = <span class="k">await</span> <span class="n">executor</span>.<span class="f">invoke</span>({
+    input: <span class="s">'Research AI trends and email a summary to team@company.com'</span>
+  });
+
+  console.<span class="f">log</span>(result.output);
+
+  <span class="c">// View the full audit trail</span>
+  <span class="k">const</span> <span class="n">logs</span> = <span class="k">await</span> <span class="n">audit</span>.audit.<span class="f">forAgent</span>(agentId);
+  console.<span class="f">log</span>(<span class="s">'Audit trail:'</span>, logs);
+}
+
+<span class="f">main</span>();</pre>
+      </div>
+
+      <div class="callout success">
+        <div class="callout-icon">✓</div>
+        <div>Every tool call above is automatically logged in your AgentAudit dashboard with timestamps, params, risk scores, and pass/fail status.</div>
+      </div>
+    </div>
+
+    <!-- Policies -->
+    <div class="section" id="policies">
+      <h2>Adding Safety Policies</h2>
+      <p>Define rules that automatically block dangerous actions before your agent executes them.</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-lang"><div class="lang-dot"></div>javascript</div>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><span class="c">// Block emails to external domains</span>
+<span class="k">await</span> <span class="n">audit</span>.policies.<span class="f">create</span>({
+  agentId,
+  name: <span class="s">'no-external-emails'</span>,
+  rule: <span class="s">'block'</span>,
+  action: <span class="s">'send_email'</span>,
+  condition: <span class="s">'params.to not contains @yourcompany.com'</span>
+});
+
+<span class="c">// Rate limit web searches to 10/minute</span>
+<span class="k">await</span> <span class="n">audit</span>.policies.<span class="f">create</span>({
+  agentId,
+  name: <span class="s">'search-rate-limit'</span>,
+  rule: <span class="s">'rate_limit'</span>,
+  action: <span class="s">'web_search'</span>,
+  limit: <span class="num">10</span>,
+  window: <span class="s">'1m'</span>
+});</pre>
+      </div>
+
+      <div class="callout warn">
+        <div class="callout-icon">⚠</div>
+        <div>Policies are evaluated before every <code>execute.run()</code> call. Blocked actions return <code>allowed: false</code> with a reason — your agent gracefully handles this instead of crashing.</div>
+      </div>
+    </div>
+
+    <!-- SDK Reference -->
+    <div class="section" id="reference">
+      <h2>SDK Reference</h2>
+      <p>All methods available in <code>@agentaudit/sdk</code>.</p>
+
+      <table class="method-table">
+        <thead>
+          <tr>
+            <th>Method</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>audit.agents.register(data)</code></td>
+            <td style="color:var(--muted)">Register a new agent, returns <code>{ id, name }</code></td>
+          </tr>
+          <tr>
+            <td><code>audit.execute.run(data)</code></td>
+            <td style="color:var(--muted)">Run action through 7 security checks</td>
+          </tr>
+          <tr>
+            <td><code>audit.policies.create(data)</code></td>
+            <td style="color:var(--muted)">Create a policy rule for an agent</td>
+          </tr>
+          <tr>
+            <td><code>audit.audit.forAgent(id)</code></td>
+            <td style="color:var(--muted)">Get full execution history for agent</td>
+          </tr>
+          <tr>
+            <td><code>audit.audit.summary(id)</code></td>
+            <td style="color:var(--muted)">AI-generated behavioral summary (Gemini)</td>
+          </tr>
+          <tr>
+            <td><code>audit.risk.profile(id)</code></td>
+            <td style="color:var(--muted)">Get risk score and flags for agent</td>
+          </tr>
+          <tr>
+            <td><code>audit.incidents.list()</code></td>
+            <td style="color:var(--muted)">List all detected incidents</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Next steps -->
+    <div class="section" id="next">
+      <h2>Next Steps</h2>
+      <div class="callout info">
+        <div class="callout-icon">→</div>
+        <div>
+          Get your API key from the <a href="https://dashboard.agentpassport.in" style="color:var(--accent2)">AgentAudit Dashboard</a> and start monitoring your LangChain agents today. Free plan includes 3 agents and 500 executions/month.
+        </div>
+      </div>
+    </div>
+
+    <div class="doc-nav">
+      <a href="/docs/authentication">
+        <div class="label">← Previous</div>
+        <div class="title">Authentication</div>
+      </a>
+      <a href="/docs/openai" style="text-align:right">
+        <div class="label">Next →</div>
+        <div class="title">OpenAI Agents</div>
+      </a>
+    </div>
+  </main>
+</div>
+
+<script>
+  function copyCode(btn) {
+    const pre = btn.closest('.code-block').querySelector('pre');
+    const text = pre.innerText;
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'Copy';
+        btn.classList.remove('copied');
+      }, 2000);
+    });
+  }
+
+  // Highlight active section in sidebar on scroll
+  const sections = document.querySelectorAll('.section[id]');
+  const sideLinks = document.querySelectorAll('.sidebar-links a');
+
+  window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(s => {
+      if (window.scrollY >= s.offsetTop - 100) current = s.id;
+    });
+    sideLinks.forEach(a => {
+      a.classList.remove('active');
+      if (a.href.includes(current)) a.classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>
