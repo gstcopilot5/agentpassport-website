@@ -1534,7 +1534,7 @@
       });
       const order = await res.json();
 
-      const options = {
+      alert('Server returned: ' + JSON.stringify(order)); const options = {
         key: order.keyId || order.key_id || order.key,
         amount: order.amount,
         currency: order.currency,
